@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ---- Blastix Esports Theme — Free Fire Tactical Black + Electric Mint Palette ---- */
+    /* Matches logo.png (#11FBBE) + high-end esports gaming portal styling                  */
+
+    /* Tactical Obsidian Black — deep game canvas (#080B10) */
+    --bg: 8 11 16;
+    /* Dark Gunmetal Carbon — sidebar, header, elevated structural chrome (#0D1218) */
+    --bg-elev: 13 18 24;
+    /* Tactical card surfaces — deep obsidian carbon (#101620) */
+    --surface: 16 22 32;
+    --surface-2: 22 31 44;
+    --surface-elev: 28 40 56;
+
+    /* Blastix Logo Accent — Electric Neon Mint (#11FBBE) + Cyan Teal (#00E5A3) */
+    --primary: 17 251 190;
+    --primary-2: 0 229 163;
+
+    /* Gunmetal Secondary */
+    --secondary: 22 31 44;
+
+    /* Crisp High-Contrast Typography */
+    --text: 248 250 252;
+    --text-soft: 226 232 240;
+    --text-muted: 148 163 184;
+    --muted: 148 163 184;
+
+    /* Tactical Esports Status Colors */
+    --success: 17 251 190; /* Completed / Verified → Electric Mint */
+    --warning: 255 175 0;  /* Pending / Paused / In-Queue → Free Fire Amber Gold */
+    --danger: 255 70 85;   /* Live Combat / Elimination / Danger → Crimson Red */
+    --gold: 255 186 0;     /* Trophy / Champion / Prize → Free Fire Champion Gold */
+
+    /* Tactical HUD Lines & Focus Ring */
+    --border: 148 163 184;
+    --ring: 17 251 190;
+
+    /* Esports card radius */
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    min-height: 100vh;
+    background-color: rgb(var(--bg));
+  }
+
+  ::selection {
+    background: rgb(var(--primary) / 0.35);
+    color: #ffffff;
+  }
+
+  /* Visible keyboard focus everywhere — electric mint outline */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring) / 0.85);
+    outline-offset: 2px;
+  }
+
+  /* Themed scrollbars with electric mint accent */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--primary) / 0.3) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--primary) / 0.25);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--primary) / 0.5);
+    background-clip: content-box;
+  }
+}
+
+@layer utilities {
+  /* Electric neon text glow for headings & KPI champions */
+  .text-glow {
+    text-shadow: 0 0 16px rgba(17, 251, 190, 0.45);
+  }
+  .text-glow-gold {
+    text-shadow: 0 0 16px rgba(255, 186, 0, 0.5);
+  }
+  .text-glow-danger {
+    text-shadow: 0 0 16px rgba(255, 70, 85, 0.5);
+  }
+
+  /* Free Fire signature chamfered cuts (beveled gaming edges) */
+  .chamfer-btn {
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  }
+  .chamfer-tr {
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  }
+  .chamfer-card {
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  }
+
+  /* High-tech esports grid pattern with cyan glow */
+  .bg-tech-grid {
+    background-image:
+      linear-gradient(rgba(17, 251, 190, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 251, 190, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Subtle tactical dot matrix */
+  .bg-tech-dots {
+    background-image: radial-gradient(rgba(17, 251, 190, 0.12) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  /* Diagonal esports speed stripes */
+  .bg-esports-stripes {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.02) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+  }
+
+  /* Subtle tactical border glow */
+  .tech-border {
+    position: relative;
+    border: 1px solid rgba(17, 251, 190, 0.18);
+  }
+  .tech-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(17, 251, 190, 0.6), transparent);
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
