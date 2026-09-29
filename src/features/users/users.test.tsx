@@ -30,7 +30,7 @@ function renderAt(routes: RouteObject[], path: string) {
 
 const now = '2026-10-01T10:00:00.000Z';
 
-const user: ManagedUser = {
+const androidUser: ManagedUser = {
   id: 'u1',
   name: 'Player One',
   email: 'p1@example.com',
@@ -41,7 +41,27 @@ const user: ManagedUser = {
   rank: 3,
   created_at: now,
   updated_at: now,
+  device_type: 'ANDROID',
+  device_model: 'Samsung Galaxy S24',
 };
+
+const iosUser: ManagedUser = {
+  id: 'u2',
+  name: 'iPhone Player',
+  email: 'iphone@example.com',
+  profile_pic: null,
+  role: 'PLAYER',
+  is_active: true,
+  xp: 800,
+  rank: 12,
+  created_at: now,
+  updated_at: now,
+  device_type: 'IOS',
+  device_model: 'iPhone 15 Pro',
+  ios_waitlist: true,
+  ios_notified_at: null,
+};
+
 function pageOf(items: ManagedUser[]): UserPage {
   return { items, page: 1, limit: 20, total: items.length };
 }
@@ -56,10 +76,14 @@ beforeEach(() => {
 });
 
 describe('user list', () => {
-  it('renders users from GET /admin/users', async () => {
-    vi.mocked(listUsers).mockResolvedValue(pageOf([user]));
+  it('renders users from GET /admin/users with device badges', async () => {
+    vi.mocked(listUsers).mockResolvedValue(pageOf([androidUser, iosUser]));
     renderAt(routes, '/users');
     expect(await screen.findByText('Player One')).toBeTruthy();
+    expect(screen.getByText('iPhone Player')).toBeTruthy();
+    expect(screen.getByText('Android')).toBeTruthy();
+    expect(screen.getByText('iOS')).toBeTruthy();
+    expect(screen.getByText(/waitlist \(pending\)/i)).toBeTruthy();
     expect(listUsers).toHaveBeenCalled();
   });
 
@@ -76,10 +100,10 @@ describe('user list', () => {
   });
 });
 
-describe('user moderation', () => {
+describe('user moderation & device actions', () => {
   it('bans a user via PATCH /admin/users/:id after confirming the dialog', async () => {
-    vi.mocked(listUsers).mockResolvedValue(pageOf([user]));
-    vi.mocked(updateUser).mockResolvedValue({ ...user, is_active: false });
+    vi.mocked(listUsers).mockResolvedValue(pageOf([androidUser]));
+    vi.mocked(updateUser).mockResolvedValue({ ...androidUser, is_active: false });
     renderAt(routes, '/users');
 
     // The per-row action opens a confirm dialog; the PATCH fires only on confirm.
@@ -90,6 +114,18 @@ describe('user moderation', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Ban user' }));
 
     await waitFor(() => expect(updateUser).toHaveBeenCalledWith('u1', { is_active: false }));
+  });
+
+  it('opens the Notify iOS Waitlist modal', async () => {
+    vi.mocked(listUsers).mockResolvedValue(pageOf([iosUser]));
+    renderAt(routes, '/users');
+
+    const notifyBtns = await screen.findAllByRole('button', { name: /notify ios waitlist/i });
+    fireEvent.click(notifyBtns[0]);
+
+    expect(await screen.findByRole('heading', { name: /notify ios waitlist players/i })).toBeTruthy();
+    expect(screen.getByDisplayValue(/BlastIX Esports is now officially available on iOS!/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /send launch notification/i })).toBeTruthy();
   });
 });
 

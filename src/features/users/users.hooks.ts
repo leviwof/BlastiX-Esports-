@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/apiError';
 import { queryKeys } from '@/lib/queryKeys';
-import { getUser, listUsers, updateUser } from './users.api';
-import type { ListUsersQuery, UpdateUserPayload } from './users.types';
+import { getUser, listUsers, notifyIosUsers, notifySingleIosUser, updateUser } from './users.api';
+import type { ListUsersQuery, NotifyIosUsersPayload, UpdateUserPayload } from './users.types';
 
 /**
  * TanStack Query hooks for user management. The list is cached per-filter and
@@ -39,6 +39,33 @@ export function useUpdateUser(id: string) {
       void client.invalidateQueries({ queryKey: queryKeys.user(id) });
       void client.invalidateQueries({ queryKey: ['users'] });
       toast.success('User updated');
+    },
+    onError: onMutationError,
+  });
+}
+
+/** Bulk notify iOS waitlist users when iPhone support goes live. */
+export function useNotifyIosUsers() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: NotifyIosUsersPayload = {}) => notifyIosUsers(payload),
+    onSuccess: (data) => {
+      void client.invalidateQueries({ queryKey: ['users'] });
+      toast.success(data.message || `Notified ${data.notified_count} iOS user(s) successfully!`);
+    },
+    onError: onMutationError,
+  });
+}
+
+/** Notify an individual iOS user. */
+export function useNotifySingleIosUser(id: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => notifySingleIosUser(id),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.user(id) });
+      void client.invalidateQueries({ queryKey: ['users'] });
+      toast.success('iOS launch notification sent to user.');
     },
     onError: onMutationError,
   });

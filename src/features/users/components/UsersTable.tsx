@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/format';
 import { getInitials } from '@/lib/utils';
+import { DeviceBadge } from './DeviceBadge';
 import { UserActions } from './UserActions';
 import type { ManagedUser } from '../users.types';
 
@@ -9,7 +10,7 @@ export interface UsersTableProps {
   users: ManagedUser[];
 }
 
-/** Paginated, moderation-ready users table. */
+/** Paginated, moderation-ready users table with device tracking. */
 function UsersTable({ users }: UsersTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -19,6 +20,7 @@ function UsersTable({ users }: UsersTableProps) {
             <th className="px-5 py-3 font-medium">User</th>
             <th className="px-5 py-3 font-medium">Role</th>
             <th className="px-5 py-3 font-medium">Status</th>
+            <th className="px-5 py-3 font-medium">Device & OS</th>
             <th className="px-5 py-3 font-medium">XP</th>
             <th className="px-5 py-3 font-medium">Rank</th>
             <th className="px-5 py-3 font-medium">Joined</th>
@@ -56,6 +58,15 @@ function UsersTable({ users }: UsersTableProps) {
                 <Badge variant={u.is_active ? 'success' : 'danger'}>
                   {u.is_active ? 'Active' : 'Banned'}
                 </Badge>
+              </td>
+              <td className="px-5 py-3">
+                <DeviceBadge
+                  deviceType={u.device_type}
+                  deviceModel={u.device_model}
+                  iosWaitlist={u.ios_waitlist}
+                  iosNotifiedAt={u.ios_notified_at}
+                  showModel
+                />
               </td>
               <td className="px-5 py-3 text-foreground-muted">{u.xp.toLocaleString()}</td>
               <td className="px-5 py-3 text-foreground-muted">{u.rank ? `#${u.rank}` : '—'}</td>

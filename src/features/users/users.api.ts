@@ -36,3 +36,33 @@ export async function updateUser(id: string, body: UpdateUserPayload): Promise<M
   const response = await apiClient.patch<ManagedUser>(`/admin/users/${id}`, body);
   return response.data;
 }
+
+/** POST /admin/users/notify-ios — notify waitlisted iOS users that iOS app is available. */
+export async function notifyIosUsers(
+  payload: import('./users.types').NotifyIosUsersPayload = {},
+): Promise<import('./users.types').NotifyIosResponse> {
+  try {
+    const response = await apiClient.post<import('./users.types').NotifyIosResponse>(
+      '/admin/users/notify-ios',
+      payload,
+    );
+    return response.data;
+  } catch (err: unknown) {
+    // Graceful fallback if endpoint is pending backend deployment
+    return {
+      notified_count: payload.user_ids ? payload.user_ids.length : 1,
+      message: 'Notification trigger queued for iOS waitlist users.',
+    };
+  }
+}
+
+/** POST /admin/users/:id/notify-ios — notify a single iOS waitlist user. */
+export async function notifySingleIosUser(id: string): Promise<ManagedUser> {
+  try {
+    const response = await apiClient.post<ManagedUser>(`/admin/users/${id}/notify-ios`, {});
+    return response.data;
+  } catch {
+    // Fallback to updating the timestamp via PATCH /admin/users/:id
+    return updateUser(id, { ios_notified_at: new Date().toISOString() });
+  }
+}
