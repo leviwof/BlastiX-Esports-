@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getErrorMessage } from '@/lib/apiError';
 import { useAuthStatus } from '@/features/auth/auth.store';
-import { useDevLogin, useLogin, useSendOtp } from '@/features/auth/auth.hooks';
-import { DEV_LOGIN_ENABLED } from '@/features/auth/devAuth';
+import { useLogin, useSendOtp } from '@/features/auth/auth.hooks';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const OTP_RE = /^\d{6}$/;
@@ -26,7 +25,6 @@ function LoginPage() {
   const location = useLocation();
   const sendOtp = useSendOtp();
   const loginMutation = useLogin();
-  const devLogin = useDevLogin();
 
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
@@ -88,27 +86,25 @@ function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <GlowCard glow className="w-full max-w-md p-8 border-primary/30 shadow-glow-strong">
+      <GlowCard className="w-full max-w-md p-8 border-white/10 shadow-xl">
         <div className="flex flex-col items-center text-center">
           <img
             src="/logo.png"
             alt="BlastiX Esports"
-            className="h-14 w-auto object-contain drop-shadow-[0_0_22px_rgba(17,251,190,0.5)] transition-transform hover:scale-105"
+            className="h-12 w-auto object-contain"
           />
-          <div className="mt-3 flex items-center gap-2">
-            <span className="rounded bg-primary/15 border border-primary/35 px-2.5 py-0.5 text-[10px] font-display font-extrabold uppercase tracking-[0.25em] text-primary shadow-glow">
-              BLASTIX ESPORTS // HUB
-            </span>
-          </div>
-          <p className="mt-3 text-sm text-foreground-muted">
+          <h1 className="mt-4 font-display text-lg font-bold tracking-wide text-foreground">
+            Admin Sign In
+          </h1>
+          <p className="mt-1.5 text-xs text-foreground-muted">
             {step === 'email'
-              ? 'Sign in to the BlastiX Esports command center.'
-              : `Enter the 6-digit battle code sent to ${email.trim()}.`}
+              ? 'Enter your email to receive a login code.'
+              : `Enter the 6-digit code sent to ${email.trim()}.`}
           </p>
         </div>
 
         {step === 'email' && (
-          <form className="mt-7 space-y-4" onSubmit={submitEmail} aria-label="Admin sign in" noValidate>
+          <form className="mt-6 space-y-4" onSubmit={submitEmail} aria-label="Admin sign in" noValidate>
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-xs font-medium text-foreground-soft">
                 Email
@@ -123,7 +119,7 @@ function LoginPage() {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder="admin@blastixesports.com"
+                  placeholder="admin@gmail.com"
                   className="pl-9"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +140,7 @@ function LoginPage() {
           </form>
         )}
         {step === 'otp' && (
-          <form className="mt-7 space-y-4" onSubmit={submitOtp} aria-label="Enter login code" noValidate>
+          <form className="mt-6 space-y-4" onSubmit={submitOtp} aria-label="Enter login code" noValidate>
             <div className="space-y-1.5">
               <label htmlFor="otp" className="text-xs font-medium text-foreground-soft">
                 Login code
@@ -160,7 +156,7 @@ function LoginPage() {
                   autoComplete="one-time-code"
                   placeholder="123456"
                   maxLength={6}
-                  className="pl-9 tracking-[0.4em]"
+                  className="pl-9 tracking-[0.35em]"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   aria-invalid={otpError ? true : undefined}
@@ -199,24 +195,7 @@ function LoginPage() {
           </form>
         )}
 
-        {DEV_LOGIN_ENABLED && (
-          <div className="mt-6 border-t border-dashed border-primary/20 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={devLogin}
-            >
-              Dev sign-in — skip OTP
-            </Button>
-            <p className="mt-2 text-center text-[11px] text-foreground-muted">
-              Local dev only. Opens the admin UI without a real session — live backend
-              data won't load through it.
-            </p>
-          </div>
-        )}
-
-        <p className="mt-6 text-center text-[11px] text-foreground-muted">
+        <p className="mt-6 text-center text-xs text-foreground-muted/70">
           Passwordless sign-in — a one-time code is emailed to admins.
         </p>
       </GlowCard>

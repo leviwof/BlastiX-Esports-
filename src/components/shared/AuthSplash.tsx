@@ -19,7 +19,7 @@ function AuthSplash({ label = 'Restoring your session…' }: AuthSplashProps) {
       <div className="flex flex-col items-center gap-2 text-center">
         <img src="/logo.png" alt="BlastiX Esports" className="h-12 w-auto animate-pulse drop-shadow-[0_0_16px_rgba(17,251,190,0.5)]" />
         <p className="text-[11px] font-display font-bold uppercase tracking-[0.25em] text-primary/80">
-          BlastiX Esports Hub
+          BlastiX Esports
         </p>
       </div>
       <div className="flex items-center gap-2.5 text-sm text-foreground-muted">

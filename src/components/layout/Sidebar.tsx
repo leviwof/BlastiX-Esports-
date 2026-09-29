@@ -128,15 +128,12 @@ function Sidebar({ variant = 'desktop', onNavigate, onLogout, onToggleCollapse }
           )}
         />
         {/* Full wordmark — when the sidebar is expanded */}
-        <div className={cn('flex items-center gap-2 min-w-0', rail ? 'hidden xl:flex' : 'flex')}>
+        <div className={cn('flex items-center min-w-0', rail ? 'hidden xl:flex' : 'flex')}>
           <img
             src="/logo.png"
             alt="BlastiX Esports"
             className="h-8 w-auto object-contain drop-shadow-[0_0_14px_rgba(17,251,190,0.4)]"
           />
-          <span className="rounded bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-primary uppercase">
-            HUB
-          </span>
         </div>
 
         {/* Hide/collapse sidebar button on desktop */}
