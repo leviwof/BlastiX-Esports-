@@ -36,6 +36,25 @@ function cleanParams(query: FilterTournamentQuery): Record<string, string | numb
   return out;
 }
 
+/**
+ * The leaderboard endpoint has existed in both a bare-array form and a
+ * `{ leaderboard: [...] }` form. Keep that transport difference at the API
+ * boundary so rendering code always receives an array.
+ */
+function leaderboardEntries(payload: unknown): LeaderboardEntry[] {
+  if (Array.isArray(payload)) return payload as LeaderboardEntry[];
+
+  if (
+    payload !== null &&
+    typeof payload === 'object' &&
+    Array.isArray((payload as { leaderboard?: unknown }).leaderboard)
+  ) {
+    return (payload as { leaderboard: LeaderboardEntry[] }).leaderboard;
+  }
+
+  throw new Error('The leaderboard response has an unexpected format.');
+}
+
 /* ------------------------------------------------------------------- reads */
 
 /** GET /tournaments — paginated list (public). */
@@ -64,8 +83,8 @@ export async function getMatches(id: string): Promise<Match[]> {
 
 /** GET /tournaments/:id/leaderboard — standings. */
 export async function getLeaderboard(id: string): Promise<LeaderboardEntry[]> {
-  const response = await apiClient.get<LeaderboardEntry[]>(`/tournaments/${id}/leaderboard`);
-  return response.data;
+  const response = await apiClient.get<unknown>(`/tournaments/${id}/leaderboard`);
+  return leaderboardEntries(response.data);
 }
 
 /* ------------------------------------------------------------ admin writes */
