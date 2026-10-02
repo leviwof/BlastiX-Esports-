@@ -19,11 +19,16 @@ import { ProofsPage } from '@/pages/ProofsPage';
 import { ContentPage } from '@/pages/ContentPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 
+// Dedicated Free Fire Live & BlastX E-Sports pages
+import { FreeFireLivePage } from '@/pages/freefire/FreeFireLivePage';
+import { FreeFireTournamentsPage } from '@/pages/freefire/FreeFireTournamentsPage';
+import { FreeFireTournamentCreatePage } from '@/pages/freefire/FreeFireTournamentCreatePage';
+import { BlastXLivePage } from '@/pages/blastx/BlastXLivePage';
+import { BlastXTournamentsPage } from '@/pages/blastx/BlastXTournamentsPage';
+import { BlastXTournamentCreatePage } from '@/pages/blastx/BlastXTournamentCreatePage';
+
 /**
- * App routing. Every sidebar module is now backed by real endpoints on the
- * deployed backend: tournament-centric screens (dashboard, tournaments, live,
- * matches, leaderboards) plus the admin modules (users, teams, challenges,
- * proof verification, content, settings). No screen renders mock data.
+ * App routing with distinct Free Fire Live & BlastX E-Sports sections.
  */
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
@@ -36,7 +41,17 @@ export const routes: RouteObject[] = [
           { index: true, element: <Navigate to="/dashboard" replace /> },
           { path: '/dashboard', element: <DashboardPage /> },
 
-          // Tournaments (full CRUD-ish: create / edit / status / room / matches)
+          // 🔥 Section 1: Free Fire Live (Dedicated management)
+          { path: '/freefire/live', element: <FreeFireLivePage /> },
+          { path: '/freefire/tournaments', element: <FreeFireTournamentsPage /> },
+          { path: '/freefire/tournaments/new', element: <FreeFireTournamentCreatePage /> },
+
+          // ⚡ Section 2: BlastX E-Sports (Dedicated management)
+          { path: '/blastx/live', element: <BlastXLivePage /> },
+          { path: '/blastx/tournaments', element: <BlastXTournamentsPage /> },
+          { path: '/blastx/tournaments/new', element: <BlastXTournamentCreatePage /> },
+
+          // Central Tournament Management & Detail Views
           { path: '/tournaments', element: <TournamentsListPage /> },
           { path: '/tournaments/new', element: <TournamentCreatePage /> },
           { path: '/tournaments/:id', element: <TournamentDetailPage /> },

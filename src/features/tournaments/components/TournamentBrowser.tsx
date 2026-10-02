@@ -6,6 +6,7 @@ import { ErrorState } from '@/components/shared/ErrorState';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useTournaments } from '../tournaments.hooks';
 import { TournamentCard } from './TournamentCard';
+import { getTournamentSection, type TournamentSection } from '../tournament.section';
 import {
   TournamentFilters,
   emptyFilters,
@@ -16,11 +17,15 @@ import type { TournamentListItem, TournamentStatus } from '../tournaments.types'
 export interface TournamentBrowserProps {
   /** Force a status (hides the status filter) — used by the Live view. */
   lockedStatus?: TournamentStatus;
+  /** Restricts results to only Free Fire Live or BlastX E-Sports tournaments. */
+  filterSection?: TournamentSection;
   /** Link target per card (defaults to the detail page). */
   cardTo?: (t: TournamentListItem) => string;
   emptyTitle?: string;
   emptyDescription?: string;
   pageSize?: number;
+  /** Whether to render quick edit, players, and cancel buttons on each card. */
+  showActions?: boolean;
 }
 
 /**
@@ -30,10 +35,12 @@ export interface TournamentBrowserProps {
  */
 function TournamentBrowser({
   lockedStatus,
+  filterSection,
   cardTo,
   emptyTitle = 'No tournaments yet',
   emptyDescription = 'Tournaments you create will appear here.',
   pageSize = 12,
+  showActions = false,
 }: TournamentBrowserProps) {
   const [filters, setFilters] = useState<TournamentFilterState>(emptyFilters);
   const [page, setPage] = useState(1);
@@ -56,12 +63,15 @@ function TournamentBrowser({
 
   const term = filters.search.trim().toLowerCase();
   const visible = useMemo(() => {
-    const items = data?.items ?? [];
+    let items = data?.items ?? [];
+    if (filterSection) {
+      items = items.filter((t) => getTournamentSection(t) === filterSection);
+    }
     if (!term) return items;
     return items.filter((t) => t.title.toLowerCase().includes(term));
-  }, [data?.items, term]);
+  }, [data?.items, term, filterSection]);
 
-  const total = data?.total ?? 0;
+  const total = filterSection ? visible.length : (data?.total ?? 0);
 
   return (
     <div className="space-y-4">
@@ -85,7 +95,7 @@ function TournamentBrowser({
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {visible.map((t) => (
-              <TournamentCard key={t.id} tournament={t} to={cardTo?.(t)} />
+              <TournamentCard key={t.id} tournament={t} to={cardTo?.(t)} showActions={showActions} />
             ))}
           </div>
 

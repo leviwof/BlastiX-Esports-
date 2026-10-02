@@ -10,6 +10,9 @@ import {
   ShieldCheck,
   Megaphone,
   Settings,
+  Flame,
+  Zap,
+  PlusCircle,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -36,15 +39,31 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/** Sidebar navigation, grouped by area of work. */
+/** Sidebar navigation, grouped by area of work with distinct Free Fire Live & BlastX sections. */
 export const NAV_GROUPS: NavGroup[] = [
   {
     items: [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, support: 'derived' }],
   },
   {
-    label: 'Competition',
+    label: '🔥 Free Fire Live',
     items: [
-      { label: 'Tournaments', to: '/tournaments', icon: Trophy, support: 'full' },
+      { label: 'Live Tournaments', to: '/freefire/live', icon: Radio, support: 'full', badge: 'live' },
+      { label: 'Manage Tournaments', to: '/freefire/tournaments', icon: Flame, support: 'full' },
+      { label: 'Create Tournament', to: '/freefire/tournaments/new', icon: PlusCircle, support: 'full' },
+    ],
+  },
+  {
+    label: '⚡ BlastX E-Sports',
+    items: [
+      { label: 'Live Tournaments', to: '/blastx/live', icon: Zap, support: 'full' },
+      { label: 'Manage Tournaments', to: '/blastx/tournaments', icon: Trophy, support: 'full' },
+      { label: 'Create Tournament', to: '/blastx/tournaments/new', icon: PlusCircle, support: 'full' },
+    ],
+  },
+  {
+    label: 'Competition Hub',
+    items: [
+      { label: 'All Tournaments', to: '/tournaments', icon: Trophy, support: 'full' },
       { label: 'Matches', to: '/matches', icon: Swords, support: 'full' },
       { label: 'Live Arena', to: '/live', icon: Radio, support: 'full', badge: 'live' },
       { label: 'Leaderboards', to: '/leaderboards', icon: BarChart3, support: 'read' },

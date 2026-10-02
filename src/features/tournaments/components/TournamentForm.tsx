@@ -9,6 +9,8 @@ import { useGames } from '@/features/games/games.hooks';
 import { TEAM_MODES, TOURNAMENT_FORMATS } from '../tournaments.types';
 import { formatEnum } from '../tournaments.utils';
 import { tournamentFormSchema, type TournamentFormValues } from '../tournament.schema';
+import type { TournamentSection } from '../tournament.section';
+import { Flame, Zap } from 'lucide-react';
 
 export interface TournamentFormProps {
   defaultValues: TournamentFormValues;
@@ -17,6 +19,8 @@ export interface TournamentFormProps {
   submitting?: boolean;
   submitLabel?: string;
   onCancel?: () => void;
+  /** Lock form to specific section (Free Fire Live or BlastX E-Sports) */
+  lockSection?: TournamentSection;
 }
 
 /**
@@ -31,15 +35,25 @@ function TournamentForm({
   submitting,
   submitLabel = 'Save',
   onCancel,
+  lockSection,
 }: TournamentFormProps) {
+  const effectiveDefaults: TournamentFormValues = {
+    ...defaultValues,
+    section: lockSection ?? defaultValues.section ?? 'freefire',
+  };
+
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentFormSchema),
-    defaultValues,
+    defaultValues: effectiveDefaults,
   });
+
+  const currentSection = watch('section') ?? lockSection ?? 'freefire';
 
   // Populate the game selector from the API, always keeping a Free Fire option
   // so the form still works if the games query is empty or fails.
@@ -49,8 +63,78 @@ function TournamentForm({
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {/* Tournament Section Selector */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-foreground-soft">
+          Tournament Category & Section
+        </label>
+        {lockSection ? (
+          <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface/50 p-3">
+            {lockSection === 'freefire' ? (
+              <>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-amber-500/20 text-amber-400">
+                  <Flame className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground">🔥 Free Fire Live Tournament</div>
+                  <div className="text-[11px] text-foreground-muted">
+                    This tournament will appear only in the Free Fire Live section of the mobile app.
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/20 text-primary">
+                  <Zap className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground">⚡ BlastX E-Sports Tournament</div>
+                  <div className="text-[11px] text-foreground-muted">
+                    This tournament will appear only in the BlastX E-Sports section of the mobile app.
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setValue('section', 'freefire')}
+              className={`flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all ${
+                currentSection === 'freefire'
+                  ? 'border-amber-500/50 bg-amber-500/10 shadow-sm text-foreground'
+                  : 'border-white/10 bg-surface/40 text-foreground-muted hover:bg-surface/80'
+              }`}
+            >
+              <Flame className={`h-4 w-4 ${currentSection === 'freefire' ? 'text-amber-400' : 'text-foreground-muted'}`} />
+              <div>
+                <div className="text-xs font-bold">🔥 Free Fire Live</div>
+                <div className="text-[10px] text-foreground-muted">Free Fire App Section</div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setValue('section', 'blastx')}
+              className={`flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all ${
+                currentSection === 'blastx'
+                  ? 'border-primary/50 bg-primary/10 shadow-glow text-foreground'
+                  : 'border-white/10 bg-surface/40 text-foreground-muted hover:bg-surface/80'
+              }`}
+            >
+              <Zap className={`h-4 w-4 ${currentSection === 'blastx' ? 'text-primary' : 'text-foreground-muted'}`} />
+              <div>
+                <div className="text-xs font-bold">⚡ BlastX E-Sports</div>
+                <div className="text-[10px] text-foreground-muted">BlastX App Section</div>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
       <Field label="Title" htmlFor="title" required error={errors.title?.message}>
-        <Input id="title" placeholder="BlastIX Weekly Cup" {...register('title')} />
+        <Input id="title" placeholder="Tournament Title" {...register('title')} />
       </Field>
 
       <Field label="Description" htmlFor="description" error={errors.description?.message}>

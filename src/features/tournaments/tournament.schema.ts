@@ -7,6 +7,12 @@ import {
   type UpdateTournamentPayload,
 } from './tournaments.types';
 import { fromDateTimeLocal, toDateTimeLocal } from './tournaments.utils';
+import {
+  getTournamentSection,
+  cleanTournamentTitle,
+  formatSectionTitle,
+  formatSectionDescription,
+} from './tournament.section';
 
 /**
  * Form schema + mappers for creating / editing a tournament. Mirrors the
@@ -30,6 +36,7 @@ export const tournamentFormSchema = z
       .url('Enter a valid URL (including https://)')
       .optional()
       .or(z.literal('')),
+    section: z.enum(['freefire', 'blastx']).optional(),
     game_slug: z.string().trim().min(1, 'Select a game'),
     format: z.enum(TOURNAMENT_FORMATS),
     team_mode: z.enum(TEAM_MODES),
@@ -116,9 +123,11 @@ function toEnum<T extends string>(value: string, allowed: readonly T[], fallback
 
 /** Prefill the edit form from an existing tournament. */
 export function tournamentToFormValues(t: Tournament): TournamentFormValues {
+  const section = getTournamentSection(t);
   return {
-    title: t.title,
-    description: t.description ?? '',
+    title: cleanTournamentTitle(t.title),
+    section,
+    description: t.description ? t.description.replace(/\[SECTION:(FREEFIRE_LIVE|BLASTX)\]/g, '').trim() : '',
     banner_url: t.banner_url ?? '',
     game_slug: t.game_slug ?? 'free_fire',
     format: toEnum(t.format, TOURNAMENT_FORMATS, 'BATTLE_ROYALE'),
@@ -135,11 +144,20 @@ export function tournamentToFormValues(t: Tournament): TournamentFormValues {
 }
 
 /** Validated form values → CreateTournamentPayload (blank optionals omitted). */
-export function toCreatePayload(values: TournamentFormValues): CreateTournamentPayload {
+export function toCreatePayload(
+  values: TournamentFormValues,
+  overrideSection?: 'freefire' | 'blastx',
+): CreateTournamentPayload {
+  const section = overrideSection ?? values.section;
+  const title = section && overrideSection ? formatSectionTitle(values.title, section) : values.title.trim();
+  const description = section && overrideSection
+    ? formatSectionDescription(values.description, section)
+    : values.description?.trim() || undefined;
+
   return {
     game_slug: values.game_slug?.trim() || 'free_fire',
-    title: values.title.trim(),
-    description: values.description?.trim() || undefined,
+    title,
+    description,
     banner_url: values.banner_url?.trim() || undefined,
     format: values.format,
     team_mode: values.team_mode,
@@ -155,7 +173,10 @@ export function toCreatePayload(values: TournamentFormValues): CreateTournamentP
 }
 
 /** Validated form values → UpdateTournamentPayload (identical, minus `game_slug`). */
-export function toUpdatePayload(values: TournamentFormValues): UpdateTournamentPayload {
-  const { game_slug, ...rest } = toCreatePayload(values);
+export function toUpdatePayload(
+  values: TournamentFormValues,
+  overrideSection?: 'freefire' | 'blastx',
+): UpdateTournamentPayload {
+  const { game_slug, ...rest } = toCreatePayload(values, overrideSection);
   return rest;
 }
