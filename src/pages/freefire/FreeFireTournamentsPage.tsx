@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus, Flame, Radio } from 'lucide-react';
+import { Plus, Radio } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { TournamentBrowser } from '@/features/tournaments/components/TournamentBrowser';
@@ -37,18 +37,6 @@ function FreeFireTournamentsPage() {
           </div>
         }
       />
-
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Flame className="h-5 w-5 text-amber-400 shrink-0" />
-          <div className="text-xs">
-            <span className="font-semibold text-foreground">Free Fire Mobile App Integration:</span>{' '}
-            <span className="text-foreground-muted">
-              All tournaments created and managed in this section are tagged as Free Fire Live and show only in the Free Fire section of player apps.
-            </span>
-          </div>
-        </div>
-      </div>
 
       <TournamentBrowser
         filterSection="freefire"

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, LogOut, PanelLeft, PanelLeftClose, Plus, Search, Settings, User } from 'lucide-react';
+import { ChevronDown, LogOut, PanelLeft, PanelLeftClose, Search, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -87,17 +87,6 @@ function Header({ onMenuClick, onToggleSidebar, sidebarOpen = true, onLogout }: 
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <Button
-          asChild
-          size="sm"
-          className="bg-primary text-background font-semibold hover:bg-primary/90 hover:shadow-glow-md transition-all duration-200"
-        >
-          <Link to="/tournaments/new" className="flex items-center gap-1.5">
-            <Plus className="h-4 w-4 stroke-[2.5]" />
-            <span className="hidden sm:inline font-display tracking-wide uppercase text-xs">New Tournament</span>
-          </Link>
-        </Button>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

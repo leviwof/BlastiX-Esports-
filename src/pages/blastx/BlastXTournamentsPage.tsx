@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus, Zap, Radio } from 'lucide-react';
+import { Plus, Radio } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { TournamentBrowser } from '@/features/tournaments/components/TournamentBrowser';
@@ -37,18 +37,6 @@ function BlastXTournamentsPage() {
           </div>
         }
       />
-
-      <div className="rounded-lg border border-primary/30 bg-primary/10 p-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Zap className="h-5 w-5 text-primary shrink-0" />
-          <div className="text-xs">
-            <span className="font-semibold text-foreground">BlastX Mobile App Integration:</span>{' '}
-            <span className="text-foreground-muted">
-              All tournaments created and managed in this section are tagged as BlastX E-Sports and show only in the BlastX section of player apps.
-            </span>
-          </div>
-        </div>
-      </div>
 
       <TournamentBrowser
         filterSection="blastx"

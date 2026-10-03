@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   CalendarClock,
   Coins,
+  Image as ImageIcon,
   MapPin,
   Trophy,
   Users,
@@ -15,7 +16,6 @@ import {
 import { GlowCard } from '@/components/shared/GlowCard';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { TournamentStatusBadge } from './TournamentStatusBadge';
 import { formatDateTime, formatEnum } from '../tournaments.utils';
 import { getTournamentSection, cleanTournamentTitle } from '../tournament.section';
 import { useUpdateTournamentStatus } from '../tournaments.hooks';
@@ -35,6 +35,14 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
   const filled = t.max_slots > 0 ? Math.min(100, Math.round((t.registered_count / t.max_slots) * 100)) : 0;
   const section = getTournamentSection(t);
   const displayTitle = cleanTournamentTitle(t.title);
+  const statusTone =
+    t.status === 'LIVE'
+      ? 'border-red-400/40 bg-red-500/15 text-red-200'
+      : t.status === 'COMPLETED'
+        ? 'border-white/15 bg-black/40 text-white/90'
+        : section === 'freefire'
+          ? 'border-amber-400/40 bg-black/45 text-amber-100'
+          : 'border-primary/40 bg-black/45 text-white';
 
   const [confirmCancel, setConfirmCancel] = useState(false);
   const updateStatus = useUpdateTournamentStatus(t.id);
@@ -52,78 +60,111 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
     <>
       <div className="group flex h-full flex-col">
         <Link to={to ?? `/tournaments/${t.id}`} className="block flex-1 focus-visible:outline-none">
-          <GlowCard interactive className="flex h-full flex-col p-4.5 border-white/[0.08] hover:border-primary/50">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                  {/* Dedicated Section Indicator */}
-                  {section === 'freefire' ? (
-                    <span className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300">
-                      <Flame className="h-2.5 w-2.5 text-amber-400" />
-                      Free Fire Live
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
-                      <Zap className="h-2.5 w-2.5 text-primary" />
-                      BlastX E-Sports
-                    </span>
-                  )}
-
-                  <span className="inline-flex items-center rounded border border-white/10 bg-surface-2/80 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-foreground-muted">
-                    {t.game_slug ? formatEnum(t.game_slug) : 'BATTLE ROYALE'}
-                  </span>
-                  <span className="inline-flex items-center rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
-                    {formatEnum(t.team_mode)}
-                  </span>
+          <GlowCard interactive className="flex h-full flex-col border-white/[0.08] p-0 hover:border-primary/50">
+            <div className="relative h-40 overflow-hidden bg-gradient-to-br from-primary/20 via-surface to-amber-500/10 sm:h-44">
+              {t.banner_url ? (
+                <img
+                  src={t.banner_url}
+                  alt=""
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-primary/50">
+                  <ImageIcon className="h-10 w-10" aria-hidden="true" />
                 </div>
-                <h3 className="truncate font-display text-base font-bold uppercase tracking-wide text-foreground group-hover:text-primary transition-colors">
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#101622] via-[#101622]/15 to-black/10" />
+              <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-lg backdrop-blur-md ${
+                    section === 'freefire'
+                      ? 'border-amber-400/35 bg-black/45 text-amber-200'
+                      : 'border-primary/35 bg-black/45 text-primary'
+                  }`}
+                >
+                  {section === 'freefire' ? (
+                    <Flame className="h-3 w-3" aria-hidden="true" />
+                  ) : (
+                    <Zap className="h-3 w-3" aria-hidden="true" />
+                  )}
+                  {section === 'freefire' ? 'Free Fire Live' : 'BlastX E-Sports'}
+                </span>
+                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-lg backdrop-blur-md ${statusTone}`}>
+                  {formatEnum(t.status)}
+                </span>
+              </div>
+              <div className="absolute inset-x-4 bottom-4">
+                <span className="mb-1.5 inline-flex rounded-md border border-white/15 bg-black/35 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur">
+                  {t.game_slug ? formatEnum(t.game_slug) : 'BATTLE ROYALE'}
+                </span>
+                <h3 className="line-clamp-2 font-display text-lg font-bold uppercase leading-tight tracking-wide text-white drop-shadow group-hover:text-primary transition-colors">
                   {displayTitle}
                 </h3>
               </div>
-              <TournamentStatusBadge status={t.status} />
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-foreground-muted">
-              <span className="inline-flex items-center gap-1.5">
-                <Trophy className="h-3.5 w-3.5 text-primary/70" aria-hidden="true" />
-                {formatEnum(t.format)}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-primary/70" aria-hidden="true" />
-                {formatEnum(t.team_mode)}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-primary/70" aria-hidden="true" />
-                {t.map}
-              </span>
-            </div>
-
-            {/* Slots progress bar with electric mint glow */}
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-display uppercase tracking-wider text-[10px] text-foreground-muted">Squad Slots</span>
-                <span className="font-medium text-foreground-soft font-display">
-                  {t.registered_count} <span className="text-foreground-muted">/ {t.max_slots}</span>
-                  <span className="ml-1 text-[11px] text-primary font-semibold">({t.slots_left} left)</span>
-                </span>
+            <div className="flex flex-1 flex-col p-4">
+              <div className="grid grid-cols-2 gap-2.5 text-xs">
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-black/15 px-2.5 py-2 text-foreground-muted">
+                  <Trophy className="h-3.5 w-3.5 shrink-0 text-primary/80" aria-hidden="true" />
+                  <span className="truncate">{formatEnum(t.format)}</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-black/15 px-2.5 py-2 text-foreground-muted">
+                  <Users className="h-3.5 w-3.5 shrink-0 text-primary/80" aria-hidden="true" />
+                  <span className="truncate">{formatEnum(t.team_mode)}</span>
+                </div>
+                <div className="col-span-2 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-black/15 px-2.5 py-2 text-foreground-muted">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/80" aria-hidden="true" />
+                  <span className="truncate">{t.map}</span>
+                </div>
               </div>
-              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-display text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
+                    Registered slots
+                  </span>
+                  <span className="font-display font-semibold text-foreground-soft">
+                    {t.registered_count}/{t.max_slots}
+                    <span className="ml-1.5 text-[10px] font-medium text-primary">{t.slots_left} left</span>
+                  </span>
+                </div>
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-[#00f5a0] shadow-glow transition-all duration-300"
-                  style={{ width: `${filled}%` }}
-                />
+                  className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2"
+                  role="progressbar"
+                  aria-label="Registered tournament slots"
+                  aria-valuemin={0}
+                  aria-valuemax={t.max_slots}
+                  aria-valuenow={t.registered_count}
+                >
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-[#00f5a0] shadow-glow transition-all duration-300"
+                    style={{ width: `${filled}%` }}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs text-foreground-muted">
-              <span className="inline-flex items-center gap-1.5">
-                <CalendarClock className="h-3.5 w-3.5 text-foreground-muted" aria-hidden="true" />
-                <span>{formatDateTime(t.starts_at)}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 font-display text-xs font-bold text-gold drop-shadow-[0_0_8px_rgba(255,186,0,0.45)]">
-                <Coins className="h-4 w-4 text-gold" aria-hidden="true" />
-                <span>{t.prize_pool.toLocaleString()} COINS</span>
-              </span>
+              <div className="mt-auto grid grid-cols-2 gap-2 border-t border-white/[0.08] pt-3 mt-4">
+                <div className="min-w-0">
+                  <span className="block font-display text-[9px] font-semibold uppercase tracking-wider text-foreground-muted">
+                    Starts
+                  </span>
+                  <span className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-foreground-soft">
+                    <CalendarClock className="h-3.5 w-3.5 shrink-0 text-primary/80" aria-hidden="true" />
+                    {formatDateTime(t.starts_at)}
+                  </span>
+                </div>
+                <div className="min-w-0 text-right">
+                  <span className="block font-display text-[9px] font-semibold uppercase tracking-wider text-foreground-muted">
+                    Prize pool
+                  </span>
+                  <span className="mt-1 inline-flex max-w-full items-center justify-end gap-1.5 truncate font-display text-xs font-bold text-gold">
+                    <Coins className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden="true" />
+                    {t.prize_pool.toLocaleString()} COINS
+                  </span>
+                </div>
+              </div>
             </div>
           </GlowCard>
         </Link>
