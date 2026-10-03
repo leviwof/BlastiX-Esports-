@@ -12,6 +12,8 @@ import { tournamentFormSchema, type TournamentFormValues } from '../tournament.s
 import type { TournamentSection } from '../tournament.section';
 import { Flame, Zap } from 'lucide-react';
 
+const MAP_OPTIONS = ['Bermuda', 'Purgatory', 'Kalahari', 'Alpine', 'Nexterra'];
+
 export interface TournamentFormProps {
   defaultValues: TournamentFormValues;
   onSubmit: (values: TournamentFormValues) => void;
@@ -186,7 +188,12 @@ function TournamentForm({
         </Field>
 
         <Field label="Map" htmlFor="map" required error={errors.map?.message}>
-          <Input id="map" placeholder="Bermuda" {...register('map')} />
+          <Select id="map" {...register('map')}>
+            <option value="">Select a map</option>
+            {MAP_OPTIONS.map((map) => (
+              <option key={map} value={map}>{map}</option>
+            ))}
+          </Select>
         </Field>
 
         <Field label="Max slots" htmlFor="max_slots" required error={errors.max_slots?.message}>
@@ -205,6 +212,29 @@ function TournamentForm({
         <Field label="Prize pool" htmlFor="prize_pool" error={errors.prize_pool?.message}>
           <Input id="prize_pool" type="number" min={0} {...register('prize_pool', { valueAsNumber: true })} />
         </Field>
+      </div>
+
+      <div className="rounded-lg border border-border bg-surface/30 p-4">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-foreground-soft">
+          Prize distribution (₹)
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Field label="1st place" htmlFor="first_place_prize" error={errors.first_place_prize?.message}>
+            <Input id="first_place_prize" type="number" min={0} {...register('first_place_prize', { valueAsNumber: true })} />
+          </Field>
+          <Field label="2nd place" htmlFor="second_place_prize" error={errors.second_place_prize?.message}>
+            <Input id="second_place_prize" type="number" min={0} {...register('second_place_prize', { valueAsNumber: true })} />
+          </Field>
+          <Field label="3rd place" htmlFor="third_place_prize" error={errors.third_place_prize?.message}>
+            <Input id="third_place_prize" type="number" min={0} {...register('third_place_prize', { valueAsNumber: true })} />
+          </Field>
+          <Field label="Booyah bonus" htmlFor="booyah_bonus" error={errors.booyah_bonus?.message}>
+            <Input id="booyah_bonus" type="number" min={0} {...register('booyah_bonus', { valueAsNumber: true })} />
+          </Field>
+          <Field label="Per kill reward" htmlFor="per_kill_reward" error={errors.per_kill_reward?.message}>
+            <Input id="per_kill_reward" type="number" min={0} {...register('per_kill_reward', { valueAsNumber: true })} />
+          </Field>
+        </div>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-3">

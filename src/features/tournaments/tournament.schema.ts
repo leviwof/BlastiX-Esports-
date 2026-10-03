@@ -54,6 +54,11 @@ export const tournamentFormSchema = z
       .number({ invalid_type_error: 'Enter a prize pool (0 if none)' })
       .int('Prize pool must be a whole number')
       .min(0, 'Prize pool cannot be negative'),
+    first_place_prize: z.number().int().min(0, 'Prize cannot be negative'),
+    second_place_prize: z.number().int().min(0, 'Prize cannot be negative'),
+    third_place_prize: z.number().int().min(0, 'Prize cannot be negative'),
+    booyah_bonus: z.number().int().min(0, 'Bonus cannot be negative'),
+    per_kill_reward: z.number().int().min(0, 'Reward cannot be negative'),
     registration_opens_at: z.string().min(1, 'Registration opening time is required'),
     registration_closes_at: z.string().min(1, 'Registration closing time is required'),
     starts_at: z.string().min(1, 'Start time is required'),
@@ -93,6 +98,11 @@ export const createDefaultValues: TournamentFormValues = {
   max_slots: 12,
   entry_fee: 0,
   prize_pool: 0,
+  first_place_prize: 0,
+  second_place_prize: 0,
+  third_place_prize: 0,
+  booyah_bonus: 0,
+  per_kill_reward: 0,
   registration_opens_at: '',
   registration_closes_at: '',
   starts_at: '',
@@ -104,6 +114,14 @@ function rulesToText(rules: unknown): string {
   if (Array.isArray(rules)) return rules.filter((r) => typeof r === 'string').join('\n');
   if (typeof rules === 'string') return rules;
   return '';
+}
+
+function prizeValue(distribution: unknown, key: string): number {
+  if (distribution && typeof distribution === 'object') {
+    const value = (distribution as Record<string, unknown>)[key];
+    return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  }
+  return 0;
 }
 
 /** Newline textarea → a trimmed string[] (or undefined when blank, so we omit the key). */
@@ -136,6 +154,11 @@ export function tournamentToFormValues(t: Tournament): TournamentFormValues {
     max_slots: t.max_slots,
     entry_fee: t.entry_fee,
     prize_pool: t.prize_pool,
+    first_place_prize: prizeValue(t.prize_distribution, 'first_place_prize'),
+    second_place_prize: prizeValue(t.prize_distribution, 'second_place_prize'),
+    third_place_prize: prizeValue(t.prize_distribution, 'third_place_prize'),
+    booyah_bonus: prizeValue(t.prize_distribution, 'booyah_bonus'),
+    per_kill_reward: prizeValue(t.prize_distribution, 'per_kill_reward'),
     registration_opens_at: toDateTimeLocal(t.registration_opens_at),
     registration_closes_at: toDateTimeLocal(t.registration_closes_at),
     starts_at: toDateTimeLocal(t.starts_at),
@@ -165,6 +188,13 @@ export function toCreatePayload(
     max_slots: values.max_slots,
     entry_fee: values.entry_fee,
     prize_pool: values.prize_pool,
+    prize_distribution: {
+      first_place_prize: values.first_place_prize,
+      second_place_prize: values.second_place_prize,
+      third_place_prize: values.third_place_prize,
+      booyah_bonus: values.booyah_bonus,
+      per_kill_reward: values.per_kill_reward,
+    },
     rules: textToRules(values.rules),
     registration_opens_at: fromDateTimeLocal(values.registration_opens_at) as string,
     registration_closes_at: fromDateTimeLocal(values.registration_closes_at) as string,
