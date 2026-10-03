@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { TournamentsListPage } from '@/pages/tournaments/TournamentsListPage';
 import { TournamentCreatePage } from '@/pages/tournaments/TournamentCreatePage';
 import { TournamentDetailPage } from '@/pages/tournaments/TournamentDetailPage';
+import { TournamentCard } from '@/features/tournaments/components/TournamentCard';
 import { ApiError } from '@/lib/apiError';
 import type {
   Match,
@@ -148,6 +149,35 @@ describe('tournament list', () => {
     vi.mocked(getTournaments).mockRejectedValue(new ApiError('Server error', { status: 500 }));
     renderAt(listRoutes, '/tournaments');
     expect(await screen.findByText(/couldn't load tournaments/i)).toBeTruthy();
+  });
+
+  it('publishes room credentials immediately from a manage tournament card', async () => {
+    vi.mocked(setRoomCredentials).mockResolvedValue({
+      ...tournament,
+      room_id: 'RM123',
+      room_password: 'secret',
+      room_released_at: now,
+    });
+    renderAt(
+      [{ path: '/', element: <TournamentCard tournament={tournament} showActions /> }],
+      '/',
+    );
+
+    fireEvent.change(screen.getByLabelText('Room ID for BlastIX Weekly Cup'), {
+      target: { value: 'RM123' },
+    });
+    fireEvent.change(screen.getByLabelText('Room password for BlastIX Weekly Cup'), {
+      target: { value: 'secret' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Publish room to players' }));
+
+    await waitFor(() =>
+      expect(setRoomCredentials).toHaveBeenCalledWith('t1', {
+        room_id: 'RM123',
+        room_password: 'secret',
+        release_now: true,
+      }),
+    );
   });
 });
 

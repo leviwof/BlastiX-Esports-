@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   CalendarClock,
@@ -12,14 +12,17 @@ import {
   Pencil,
   Trash2,
   Users2,
+  KeyRound,
+  Send,
 } from 'lucide-react';
 import { GlowCard } from '@/components/shared/GlowCard';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { formatDateTime, formatEnum } from '../tournaments.utils';
 import { getTournamentSection, cleanTournamentTitle } from '../tournament.section';
-import { useUpdateTournamentStatus } from '../tournaments.hooks';
+import { useSetRoomCredentials, useUpdateTournamentStatus } from '../tournaments.hooks';
 import type { TournamentListItem } from '../tournaments.types';
+import { Input } from '@/components/ui/input';
 
 export interface TournamentCardProps {
   tournament: TournamentListItem;
@@ -45,7 +48,15 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
           : 'border-primary/40 bg-black/45 text-white';
 
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [roomId, setRoomId] = useState(t.room_id ?? '');
+  const [roomPassword, setRoomPassword] = useState(t.room_password ?? '');
   const updateStatus = useUpdateTournamentStatus(t.id);
+  const setRoom = useSetRoomCredentials(t.id);
+
+  useEffect(() => {
+    setRoomId(t.room_id ?? '');
+    setRoomPassword(t.room_password ?? '');
+  }, [t.room_id, t.room_password]);
 
   const handleCancelTournament = () => {
     updateStatus.mutate(
@@ -55,6 +66,17 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
   };
 
   const isCancelled = t.status === 'CANCELLED';
+  const roomIsPublished = Boolean(t.room_id && t.room_password && t.room_released_at);
+
+  const handlePublishRoom = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!roomId.trim() || !roomPassword.trim()) return;
+    setRoom.mutate({
+      room_id: roomId.trim(),
+      room_password: roomPassword.trim(),
+      release_now: true,
+    });
+  };
 
   return (
     <>
@@ -171,39 +193,84 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
 
         {/* Quick management actions when showActions is enabled */}
         {showActions && (
-          <div className="mt-2 flex items-center gap-2 px-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs h-8"
-              onClick={() => navigate(`/tournaments/${t.id}/edit`)}
-            >
-              <Pencil className="h-3 w-3 mr-1 text-primary" />
-              Edit
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs h-8"
-              onClick={() => navigate(`/tournaments/${t.id}`)}
-            >
-              <Users2 className="h-3 w-3 mr-1 text-primary" />
-              Players
-            </Button>
-            {!isCancelled && (
+          <>
+            <div className="mt-2 flex items-center gap-2 px-1">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="text-xs h-8 px-2.5 text-red-400 hover:text-red-300 hover:border-red-500/40"
-                onClick={() => setConfirmCancel(true)}
+                className="flex-1 text-xs h-8"
+                onClick={() => navigate(`/tournaments/${t.id}/edit`)}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Pencil className="h-3 w-3 mr-1 text-primary" />
+                Edit
               </Button>
-            )}
-          </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs h-8"
+                onClick={() => navigate(`/tournaments/${t.id}`)}
+              >
+                <Users2 className="h-3 w-3 mr-1 text-primary" />
+                Players
+              </Button>
+              {!isCancelled && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 px-2.5 text-red-400 hover:text-red-300 hover:border-red-500/40"
+                  onClick={() => setConfirmCancel(true)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+
+            <form
+              className="mt-3 space-y-3 rounded-xl border border-primary/20 bg-primary/[0.035] p-3"
+              onSubmit={handlePublishRoom}
+              aria-label={`Room details for ${displayTitle}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <h4 className="font-display text-xs font-bold uppercase tracking-wider text-foreground-soft">
+                    Free Fire room
+                  </h4>
+                </div>
+                {roomIsPublished && (
+                  <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300">
+                    Published
+                  </span>
+                )}
+              </div>
+              <Input
+                aria-label={`Room ID for ${displayTitle}`}
+                value={roomId}
+                onChange={(event) => setRoomId(event.target.value)}
+                placeholder="Paste Room ID"
+                autoComplete="off"
+                required
+              />
+              <Input
+                aria-label={`Room password for ${displayTitle}`}
+                value={roomPassword}
+                onChange={(event) => setRoomPassword(event.target.value)}
+                placeholder="Paste Room Password"
+                autoComplete="off"
+                required
+              />
+              <p className="text-[11px] leading-relaxed text-foreground-muted">
+                Publish sends these details to confirmed players immediately. Players enter them in Free Fire MAX.
+              </p>
+              <Button type="submit" size="sm" className="w-full" disabled={setRoom.isPending}>
+                <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                {setRoom.isPending ? 'Publishing…' : roomIsPublished ? 'Update & publish room' : 'Publish room to players'}
+              </Button>
+            </form>
+          </>
         )}
       </div>
 

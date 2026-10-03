@@ -39,9 +39,8 @@ export type MatchStatus = (typeof MATCH_STATUSES)[number];
 /* --------------------------------------------------------------- responses */
 
 /**
- * Shape returned in the list (`GET /tournaments`). The list mapper is called
- * with NO current user and includeRoom=false, so room credentials,
- * `is_registered` and `my_registration` are ABSENT from list items.
+ * Shape returned in the admin tournament list. Admin list items may contain
+ * room credentials; public tournament list/detail responses never do.
  */
 export interface TournamentListItem {
   id: string;
@@ -68,6 +67,9 @@ export interface TournamentListItem {
   created_by: string;
   created_at: string;
   updated_at: string;
+  room_id?: string | null;
+  room_password?: string | null;
+  room_released_at?: string | null;
 }
 
 /**
