@@ -36,6 +36,8 @@ export interface NavItem {
 export interface NavGroup {
   /** Section heading shown above the group (omitted for the top item). */
   label?: string;
+  /** Optional accent used to make the two tournament areas easy to distinguish. */
+  accent?: 'freefire' | 'blastx';
   items: NavItem[];
 }
 
@@ -45,7 +47,8 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, support: 'derived' }],
   },
   {
-    label: '🔥 Free Fire Live',
+    label: 'Free Fire Live',
+    accent: 'freefire',
     items: [
       { label: 'Live Tournaments', to: '/freefire/live', icon: Radio, support: 'full', badge: 'live' },
       { label: 'Manage Tournaments', to: '/freefire/tournaments', icon: Flame, support: 'full' },
@@ -53,7 +56,8 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: '⚡ BlastX E-Sports',
+    label: 'BlastX E-Sports',
+    accent: 'blastx',
     items: [
       { label: 'Live Tournaments', to: '/blastx/live', icon: Zap, support: 'full' },
       { label: 'Manage Tournaments', to: '/blastx/tournaments', icon: Trophy, support: 'full' },

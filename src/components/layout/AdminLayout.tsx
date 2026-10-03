@@ -68,7 +68,7 @@ function AdminLayout() {
             : '-translate-x-full opacity-0 pointer-events-none'
         )}
       >
-        <Sidebar variant="desktop" onLogout={handleLogout} onToggleCollapse={toggleSidebar} />
+        <Sidebar variant="desktop" onToggleCollapse={toggleSidebar} />
       </aside>
 
       {/* Content column, offsets smoothly when sidebar collapses or opens */}
@@ -93,7 +93,7 @@ function AdminLayout() {
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDrawer} aria-hidden="true" />
           <div className="absolute inset-y-0 left-0 w-[240px] border-r border-white/[0.08] bg-background-elevated shadow-glow-strong">
-            <Sidebar variant="drawer" onNavigate={closeDrawer} onLogout={handleLogout} />
+            <Sidebar variant="drawer" onNavigate={closeDrawer} />
           </div>
         </div>
       )}
