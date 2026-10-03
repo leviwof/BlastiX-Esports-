@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/shared/Field';
 import { Switch } from '@/components/ui/Switch';
+import { ImageUploadField } from '@/components/shared/ImageUploadField';
 import { bannerFormSchema, type BannerFormValues } from '../content.schema';
 
 export interface BannerFormProps {
@@ -22,11 +24,15 @@ function BannerForm({
   submitLabel = 'Save',
   onCancel,
 }: BannerFormProps) {
+  const [imageUploading, setImageUploading] = useState(false);
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<BannerFormValues>({ resolver: zodResolver(bannerFormSchema), defaultValues });
+  const imageUrl = watch('image_url');
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -34,12 +40,19 @@ function BannerForm({
         <Input id="banner-title" placeholder="Season 5 is live" {...register('title')} />
       </Field>
 
-      <Field label="Image URL" htmlFor="banner-image" required error={errors.image_url?.message}>
-        <Input
+      <Field
+        label="Banner image"
+        htmlFor="banner-image"
+        required
+        error={errors.image_url?.message}
+        hint="Upload an image for the app banner."
+      >
+        <ImageUploadField
           id="banner-image"
-          type="url"
-          placeholder="https://…/banner.jpg"
-          {...register('image_url')}
+          value={imageUrl}
+          onChange={(imageUrl) => setValue('image_url', imageUrl, { shouldDirty: true, shouldValidate: true })}
+          onUploadingChange={setImageUploading}
+          disabled={submitting}
         />
       </Field>
 
@@ -87,8 +100,8 @@ function BannerForm({
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Saving…' : submitLabel}
+        <Button type="submit" disabled={submitting || imageUploading}>
+          {imageUploading ? 'Uploading image…' : submitting ? 'Saving…' : submitLabel}
         </Button>
       </div>
     </form>

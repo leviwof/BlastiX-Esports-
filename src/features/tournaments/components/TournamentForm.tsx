@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
@@ -5,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/shared/Field';
+import { ImageUploadField } from '@/components/shared/ImageUploadField';
 import { useGames } from '@/features/games/games.hooks';
 import { TEAM_MODES, TOURNAMENT_FORMATS } from '../tournaments.types';
 import { formatEnum } from '../tournaments.utils';
@@ -39,6 +41,7 @@ function TournamentForm({
   onCancel,
   lockSection,
 }: TournamentFormProps) {
+  const [imageUploading, setImageUploading] = useState(false);
   const effectiveDefaults: TournamentFormValues = {
     ...defaultValues,
     section: lockSection ?? defaultValues.section ?? 'freefire',
@@ -56,6 +59,7 @@ function TournamentForm({
   });
 
   const currentSection = watch('section') ?? lockSection ?? 'freefire';
+  const bannerUrl = watch('banner_url') ?? '';
 
   // Populate the game selector from the API, always keeping a Free Fire option
   // so the form still works if the games query is empty or fails.
@@ -148,12 +152,18 @@ function TournamentForm({
       </Field>
 
       <Field
-        label="Banner URL"
+        label="Tournament image"
         htmlFor="banner_url"
         error={errors.banner_url?.message}
-        hint="Direct link to a banner image (optional)."
+        hint="Upload an optional image to show on the tournament card."
       >
-        <Input id="banner_url" placeholder="https://…" {...register('banner_url')} />
+        <ImageUploadField
+          id="banner_url"
+          value={bannerUrl}
+          onChange={(imageUrl) => setValue('banner_url', imageUrl, { shouldDirty: true, shouldValidate: true })}
+          onUploadingChange={setImageUploading}
+          disabled={submitting}
+        />
       </Field>
 
       <Field label="Game" htmlFor="game_slug" required error={errors.game_slug?.message}>
@@ -276,8 +286,8 @@ function TournamentForm({
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Saving…' : submitLabel}
+        <Button type="submit" disabled={submitting || imageUploading}>
+          {imageUploading ? 'Uploading image…' : submitting ? 'Saving…' : submitLabel}
         </Button>
       </div>
     </form>

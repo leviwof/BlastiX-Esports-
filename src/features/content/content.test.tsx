@@ -5,10 +5,12 @@ import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-rout
 import { ContentPage } from '@/pages/ContentPage';
 import type { Banner, BannerPage } from '@/features/content/content.types';
 import { createBanner, listBanners } from '@/features/content/content.api';
+import { uploadAdminImage } from '@/lib/imageUpload';
 
 // Only the banners tab is exercised, so only its reads / writes are referenced;
 // the content API module is auto-mocked and toasts are stubbed.
 vi.mock('@/features/content/content.api');
+vi.mock('@/lib/imageUpload', () => ({ uploadAdminImage: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 function makeClient(): QueryClient {
@@ -57,6 +59,7 @@ describe('content — banners', () => {
   it('creates a banner via POST /admin/banners', async () => {
     vi.mocked(listBanners).mockResolvedValue(pageOf([banner]));
     vi.mocked(createBanner).mockResolvedValue({ ...banner, id: 'b-new' });
+    vi.mocked(uploadAdminImage).mockResolvedValue('https://cdn.example.com/summer.jpg');
     renderAt(routes, '/content');
 
     // The Content page opens on the Banners tab; open its create modal.
@@ -66,9 +69,11 @@ describe('content — banners', () => {
     fireEvent.change(within(dialog).getByLabelText(/title/i), {
       target: { value: 'Summer Splash' },
     });
-    fireEvent.change(within(dialog).getByLabelText(/image url/i), {
-      target: { value: 'https://cdn.example.com/summer.jpg' },
+    fireEvent.change(within(dialog).getByLabelText(/banner image/i), {
+      target: { files: [new File(['image'], 'summer.png', { type: 'image/png' })] },
     });
+    await waitFor(() => expect(uploadAdminImage).toHaveBeenCalledTimes(1));
+    await within(dialog).findByAltText('Uploaded image preview');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create banner' }));
 
     await waitFor(() => expect(createBanner).toHaveBeenCalledTimes(1));
@@ -82,4 +87,3 @@ describe('content — banners', () => {
     );
   });
 });
-
