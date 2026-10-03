@@ -15,10 +15,17 @@ export function getTournamentSection(t: {
   title?: string;
   description?: string | null;
   game_slug?: string;
+  section?: string;
 }): TournamentSection {
   const title = t.title || '';
   const desc = t.description || '';
   const slug = t.game_slug || '';
+
+  // Prefer the backend source of truth. Title/description tags remain as a
+  // backwards-compatible fallback for tournaments created before `section`
+  // was sent by the admin portal.
+  if (t.section === 'FREEFIRE_LIVE') return 'freefire';
+  if (t.section === 'BLASTX') return 'blastx';
 
   if (
     title.startsWith(FF_LIVE_TAG) ||

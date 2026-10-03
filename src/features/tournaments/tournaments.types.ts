@@ -27,6 +27,9 @@ export type TournamentFormat = (typeof TOURNAMENT_FORMATS)[number];
 export const TEAM_MODES = ['SOLO', 'DUO', 'SQUAD'] as const;
 export type TeamMode = (typeof TEAM_MODES)[number];
 
+/** Backend enum values used to route events to the correct player catalogue. */
+export type TournamentSectionApi = 'FREEFIRE_LIVE' | 'BLASTX';
+
 export const REGISTRATION_STATUSES = ['CONFIRMED', 'CANCELLED', 'DISQUALIFIED'] as const;
 export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 
@@ -61,6 +64,7 @@ export interface TournamentListItem {
   registration_closes_at: string;
   starts_at: string;
   status: string;
+  section?: TournamentSectionApi;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -152,6 +156,7 @@ export interface FilterTournamentQuery {
 
 /** POST /admin/tournaments — mirrors CreateTournamentDto. */
 export interface CreateTournamentPayload {
+  section?: TournamentSectionApi;
   game_slug?: string;
   title: string;
   description?: string;

@@ -59,7 +59,7 @@ function leaderboardEntries(payload: unknown): LeaderboardEntry[] {
 
 /** GET /tournaments — paginated list (public). */
 export async function getTournaments(query: FilterTournamentQuery = {}): Promise<TournamentPage> {
-  const response = await apiClient.get<TournamentPage>('/tournaments', { params: cleanParams(query) });
+  const response = await apiClient.get<TournamentPage>('/admin/tournaments', { params: cleanParams(query) });
   return response.data;
 }
 

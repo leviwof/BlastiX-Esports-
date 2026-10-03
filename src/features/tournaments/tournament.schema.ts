@@ -178,6 +178,7 @@ export function toCreatePayload(
     : values.description?.trim() || undefined;
 
   return {
+    section: section === 'freefire' ? 'FREEFIRE_LIVE' : section === 'blastx' ? 'BLASTX' : undefined,
     game_slug: values.game_slug?.trim() || 'free_fire',
     title,
     description,
