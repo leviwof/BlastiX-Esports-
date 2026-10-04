@@ -30,7 +30,7 @@ const now = '2026-10-01T10:00:00.000Z';
 // A pending submission — the only status that offers approve / reject actions.
 const proof: Proof = {
   id: 'pr1',
-  proof_url: 'https://example.com/proof.png',
+  proof_url: 'https://drive.google.com/file/d/drive-file-123/preview',
   status: 'PROOF_SUBMITTED',
   current_progress: 1,
   submitted_at: now,
@@ -98,18 +98,48 @@ describe('proof verification', () => {
     );
   });
 
-  it('plays the recording in an embedded player when "Watch Video" is clicked', async () => {
+  it('plays Google Drive proofs in a native player using the source aspect ratio', async () => {
     vi.mocked(listProofs).mockResolvedValue(pageOf([proof]));
     renderAt(routes, '/proofs');
 
     fireEvent.click(await screen.findByRole('button', { name: 'Watch Video' }));
 
-    const frame = await screen.findByTitle('Proof recording');
-    expect(frame.getAttribute('src')).toBe(proof.proof_url);
-    // The external fallback link points at the same URL.
+    const video = await screen.findByTitle('Proof recording');
+    expect(video.tagName).toBe('VIDEO');
+    expect(video.getAttribute('src')).toBe(
+      'https://drive.google.com/uc?export=download&id=drive-file-123',
+    );
+    expect(video.className).toContain('object-contain');
     expect(
       screen.getByRole('link', { name: /open in/i }).getAttribute('href'),
     ).toBe(proof.proof_url);
   });
-});
 
+  it('falls back to the Drive embed if native video playback fails', async () => {
+    const driveProof = {
+      ...proof,
+      proof_url: 'https://drive.google.com/file/d/drive-file-123/preview',
+    };
+    vi.mocked(listProofs).mockResolvedValue(pageOf([driveProof]));
+    renderAt(routes, '/proofs');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Watch Video' }));
+    fireEvent.error(await screen.findByTitle('Proof recording'));
+
+    const frame = await screen.findByTitle('Proof recording');
+    expect(frame.tagName).toBe('IFRAME');
+    expect(frame.getAttribute('src')).toBe(driveProof.proof_url);
+  });
+
+  it('keeps embedding non-Drive proof URLs', async () => {
+    const externalProof = { ...proof, proof_url: 'https://example.com/proof.mp4' };
+    vi.mocked(listProofs).mockResolvedValue(pageOf([externalProof]));
+    renderAt(routes, '/proofs');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Watch Video' }));
+
+    const frame = await screen.findByTitle('Proof recording');
+    expect(frame.tagName).toBe('IFRAME');
+    expect(frame.getAttribute('src')).toBe(externalProof.proof_url);
+  });
+});

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Modal } from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,25 @@ export interface ProofVideoModalProps {
 }
 
 /**
- * Plays a submitted proof recording in an embedded player. Proof URLs are
- * typically Google Drive `/preview` links (which stream in an <iframe>), but any
- * embeddable URL works; a direct external link is always offered as a fallback.
+ * Play public Google Drive recordings with the native video controls so their
+ * source aspect ratio is preserved. Fall back to Drive's embed if direct playback
+ * is unavailable for a particular file.
  */
 function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
   const url = proof?.proof_url ?? null;
   const isDrive = url ? /drive\.google\.com/i.test(url) : false;
+  const driveFileId = url?.match(/\/file\/d\/([^/?]+)/)?.[1] ?? null;
+  const directVideoUrl =
+    driveFileId && isDrive
+      ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveFileId)}`
+      : null;
+  const [useDriveEmbed, setUseDriveEmbed] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
+
+  useEffect(() => {
+    setUseDriveEmbed(false);
+    setAspectRatio(null);
+  }, [url]);
 
   return (
     <Modal
@@ -24,7 +37,7 @@ function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
       onClose={onClose}
       title="Proof recording"
       description={proof ? `${proof.user.name} — "${proof.challenge.title}"` : undefined}
-      className="max-w-3xl"
+      className="max-w-6xl"
       footer={
         url ? (
           <Button asChild variant="outline">
@@ -36,7 +49,34 @@ function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
         ) : undefined
       }
     >
-      {url ? (
+      {url && directVideoUrl && !useDriveEmbed ? (
+        <div
+          className="mx-auto flex w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-black"
+          style={{
+            aspectRatio: aspectRatio ? `${aspectRatio}` : '16 / 9',
+            maxHeight: '70vh',
+          }}
+        >
+          <video
+            key={url}
+            src={directVideoUrl}
+            title="Proof recording"
+            controls
+            playsInline
+            preload="metadata"
+            className="h-full w-full object-contain"
+            onLoadedMetadata={(event) => {
+              const { videoWidth, videoHeight } = event.currentTarget;
+              if (videoWidth > 0 && videoHeight > 0) {
+                setAspectRatio(videoWidth / videoHeight);
+              }
+            }}
+            onError={() => setUseDriveEmbed(true)}
+          >
+            Your browser cannot play this recording.
+          </video>
+        </div>
+      ) : url ? (
         <iframe
           src={url}
           title="Proof recording"
