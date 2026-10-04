@@ -17,6 +17,7 @@ export function useProofs(query: ListProofsQuery = {}) {
     queryKey: queryKeys.proofs(query as Record<string, unknown>),
     queryFn: () => listProofs(query),
     placeholderData: (prev) => prev,
+    refetchInterval: query.status === 'PROOF_SUBMITTED' ? 15_000 : false,
   });
 }
 
