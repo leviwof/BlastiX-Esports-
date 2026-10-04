@@ -4,13 +4,15 @@ import { Tabs, type TabItem } from '@/components/ui/Tabs';
 import { BannersPanel } from '@/features/content/components/BannersPanel';
 import { AnnouncementsPanel } from '@/features/content/components/AnnouncementsPanel';
 import { NoticesPanel } from '@/features/content/components/NoticesPanel';
+import { PushBroadcastPanel } from '@/features/notifications/PushBroadcastPanel';
 
-type ContentTab = 'banners' | 'announcements' | 'notices';
+type ContentTab = 'banners' | 'announcements' | 'notices' | 'push';
 
 const TABS: TabItem[] = [
   { value: 'banners', label: 'Banners' },
   { value: 'announcements', label: 'Announcements' },
   { value: 'notices', label: 'Notices' },
+  { value: 'push', label: 'Push notifications' },
 ];
 
 /**
@@ -24,7 +26,7 @@ function ContentPage() {
     <div>
       <PageHeader
         title="Content"
-        description="Manage promo banners, announcements and community notices."
+        description="Manage app content and send push notifications."
         breadcrumbs={[{ label: 'Admin', to: '/dashboard' }, { label: 'Content' }]}
       />
 
@@ -34,6 +36,7 @@ function ContentPage() {
         {tab === 'banners' && <BannersPanel />}
         {tab === 'announcements' && <AnnouncementsPanel />}
         {tab === 'notices' && <NoticesPanel />}
+        {tab === 'push' && <PushBroadcastPanel />}
       </div>
     </div>
   );
