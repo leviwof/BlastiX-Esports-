@@ -19,7 +19,7 @@ import {
   setUnauthorizedHandler,
 } from '@/lib/apiClient';
 import { ApiError } from '@/lib/apiError';
-import { sendOtp, login, getMe } from '@/features/auth/auth.api';
+import { adminPasswordLogin, getMe } from '@/features/auth/auth.api';
 
 vi.mock('@/features/auth/auth.api');
 
@@ -78,13 +78,10 @@ function renderRoutesAt(path: string) {
   );
 }
 
-async function advanceToOtpStep() {
-  vi.mocked(sendOtp).mockResolvedValue(undefined);
+function fillAdminCredentials(password = 'temporary-admin-password') {
   renderWithProviders(<LoginPage />);
   fireEvent.change(screen.getByLabelText(/email/i), { target: { value: ADMIN_EMAIL } });
-  fireEvent.click(screen.getByRole('button', { name: /send login code/i }));
-  // Exact match: the form's aria-label ("Enter login code") also matches /login code/i.
-  return screen.findByLabelText('Login code');
+  fireEvent.change(screen.getByLabelText(/password/i), { target: { value: password } });
 }
 
 beforeEach(() => {
@@ -98,57 +95,59 @@ describe('admin authentication', () => {
   it('renders the login form', () => {
     renderWithProviders(<LoginPage />);
     expect(screen.getByLabelText(/email/i)).toBeTruthy();
-    expect(screen.getByRole('button', { name: /send login code/i })).toBeTruthy();
+    expect(screen.getByLabelText(/password/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeTruthy();
   });
 
-  it('validates the email before requesting a code', () => {
+  it('validates the email before attempting login', () => {
     renderWithProviders(<LoginPage />);
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'not-an-email' } });
-    fireEvent.click(screen.getByRole('button', { name: /send login code/i }));
-    expect(screen.getByText(/valid email/i)).toBeTruthy();
-    expect(sendOtp).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password' } });
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(screen.getByText(/valid admin email/i)).toBeTruthy();
+    expect(adminPasswordLogin).not.toHaveBeenCalled();
   });
 
-  it('validates the OTP before attempting login', async () => {
-    const otpInput = await advanceToOtpStep();
-    fireEvent.change(otpInput, { target: { value: '123' } });
-    fireEvent.click(screen.getByRole('button', { name: /verify & sign in/i }));
-    expect(screen.getByText(/code from your email/i)).toBeTruthy();
-    expect(login).not.toHaveBeenCalled();
+  it('requires a password before attempting login', () => {
+    renderWithProviders(<LoginPage />);
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: ADMIN_EMAIL } });
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(screen.getByText(/enter your admin password/i)).toBeTruthy();
+    expect(adminPasswordLogin).not.toHaveBeenCalled();
   });
 
-  // __MORE__
-
-  it('signs in an admin after a valid code and stores the session', async () => {
-    vi.mocked(login).mockResolvedValue(adminUser);
-    const otpInput = await advanceToOtpStep();
-    fireEvent.change(otpInput, { target: { value: '654321' } });
-    fireEvent.click(screen.getByRole('button', { name: /verify & sign in/i }));
+  it('signs in an admin with valid credentials and stores the session', async () => {
+    vi.mocked(adminPasswordLogin).mockResolvedValue(adminUser);
+    fillAdminCredentials('correct-admin-password');
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => expect(useAuthStore.getState().status).toBe('authenticated'));
     expect(useAuthStore.getState().admin?.email).toBe(ADMIN_EMAIL);
     expect(getToken()).toBe('jwt_admin');
-    expect(login).toHaveBeenCalledWith({ email: ADMIN_EMAIL, otp: '654321' });
+    expect(adminPasswordLogin).toHaveBeenCalledWith({
+      email: ADMIN_EMAIL,
+      password: 'correct-admin-password',
+    });
   });
 
-  it('keeps the user signed out and stores nothing on an invalid code', async () => {
-    vi.mocked(login).mockRejectedValue(new ApiError('Invalid or expired code.', { status: 400 }));
-    const otpInput = await advanceToOtpStep();
-    fireEvent.change(otpInput, { target: { value: '000000' } });
-    fireEvent.click(screen.getByRole('button', { name: /verify & sign in/i }));
+  it('keeps the user signed out and stores nothing on invalid credentials', async () => {
+    vi.mocked(adminPasswordLogin).mockRejectedValue(
+      new ApiError('Invalid admin credentials', { status: 401 }),
+    );
+    fillAdminCredentials('wrong-password');
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    await waitFor(() => expect(login).toHaveBeenCalled());
+    await waitFor(() => expect(adminPasswordLogin).toHaveBeenCalled());
     expect(useAuthStore.getState().status).toBe('unauthenticated');
     expect(getToken()).toBeNull();
   });
 
-  it('denies a non-admin even with a valid code', async () => {
-    vi.mocked(login).mockResolvedValue(playerUser);
-    const otpInput = await advanceToOtpStep();
-    fireEvent.change(otpInput, { target: { value: '654321' } });
-    fireEvent.click(screen.getByRole('button', { name: /verify & sign in/i }));
+  it('denies a non-admin even if password login returns a player', async () => {
+    vi.mocked(adminPasswordLogin).mockResolvedValue(playerUser);
+    fillAdminCredentials();
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    await waitFor(() => expect(login).toHaveBeenCalled());
+    await waitFor(() => expect(adminPasswordLogin).toHaveBeenCalled());
     expect(useAuthStore.getState().status).toBe('unauthenticated');
     expect(getToken()).toBeNull();
   });
@@ -164,7 +163,7 @@ describe('admin authentication', () => {
   it('redirects an unauthenticated visitor from a protected route to /login', async () => {
     useAuthStore.setState({ status: 'unauthenticated', admin: null });
     renderRoutesAt('/dashboard');
-    expect(await screen.findByRole('button', { name: /send login code/i })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /sign in/i })).toBeTruthy();
   });
 
   it('sends an already-authenticated admin away from /login', async () => {

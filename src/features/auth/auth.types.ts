@@ -5,9 +5,10 @@
  *
  * Verified against the deployed backend (NestJS): the documented admin auth
  * endpoints in the brief (`/admin/auth/login`, `/admin/auth/me`) do NOT exist.
- * The real contract is passwordless email-OTP shared with players:
+ * The admin panel uses its admin-only password login; player OTP auth remains:
  *   POST /auth/send-otp  { email }            → { sent: true }
  *   POST /auth/login     { email, otp }        → UserResponse (incl. JWT `token`)
+ *   POST /auth/admin-login { email, password } → UserResponse (admin only)
  *   GET  /users/me       (Bearer JWT)          → UserResponse
  * Admin access = `role === 'ADMIN'` (the backend maps non-admins to 'PLAYER').
  */
@@ -46,10 +47,16 @@ export interface SendOtpRequest {
   email: string;
 }
 
-/** POST /auth/login request body. */
+/** POST /auth/login request body for player OTP auth. */
 export interface LoginRequest {
   email: string;
   otp: string;
+}
+
+/** POST /auth/admin-login request body. */
+export interface AdminPasswordLoginRequest {
+  email: string;
+  password: string;
 }
 
 /**

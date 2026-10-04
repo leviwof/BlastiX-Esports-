@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { clearToken, setToken } from '@/lib/apiClient';
 import { ApiError } from '@/lib/apiError';
-import { login, sendOtp } from './auth.api';
+import { adminPasswordLogin, login, sendOtp } from './auth.api';
 import { useAuthStore } from './auth.store';
-import { type AdminUser, type LoginRequest, isAdmin, toAdminUser } from './auth.types';
+import { type AdminPasswordLoginRequest, type AdminUser, type LoginRequest, isAdmin, toAdminUser } from './auth.types';
 import { DEV_ADMIN, DEV_LOGIN_ENABLED, DEV_TOKEN } from './devAuth';
 
 /** Request an OTP email for the given address. */
@@ -28,6 +28,26 @@ export function useLogin() {
       const user = await login(body);
       if (!isAdmin(user)) {
         // Authenticated, but not an admin — deny access, keep no credentials.
+        throw new ApiError('This account does not have admin access.', { status: 403 });
+      }
+      if (!user.token) {
+        throw new ApiError('The server did not return a session token. Please try again.');
+      }
+      setToken(user.token);
+      const admin = toAdminUser(user);
+      setAuthenticated(admin);
+      return admin;
+    },
+  });
+}
+
+/** Authenticate an administrator with the server-configured email and password. */
+export function useAdminPasswordLogin() {
+  const setAuthenticated = useAuthStore((s) => s.setAuthenticated);
+  return useMutation<AdminUser, unknown, AdminPasswordLoginRequest>({
+    mutationFn: async (body) => {
+      const user = await adminPasswordLogin(body);
+      if (!isAdmin(user)) {
         throw new ApiError('This account does not have admin access.', { status: 403 });
       }
       if (!user.token) {

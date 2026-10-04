@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
-import type { LoginRequest, SendOtpRequest, UserResponse } from './auth.types';
+import type { AdminPasswordLoginRequest, LoginRequest, SendOtpRequest, UserResponse } from './auth.types';
 
 /**
  * Auth API — thin typed wrappers over the verified backend endpoints.
@@ -21,6 +21,12 @@ export async function sendOtp(body: SendOtpRequest): Promise<void> {
  */
 export async function login(body: LoginRequest): Promise<UserResponse> {
   const response = await apiClient.post<UserResponse>('/auth/login', body);
+  return response.data;
+}
+
+/** POST /auth/admin-login — exchange configured admin credentials for a session. */
+export async function adminPasswordLogin(body: AdminPasswordLoginRequest): Promise<UserResponse> {
+  const response = await apiClient.post<UserResponse>('/auth/admin-login', body);
   return response.data;
 }
 
