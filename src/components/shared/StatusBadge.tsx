@@ -85,6 +85,9 @@ export interface StatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> 
 
 /** Themed status pill; LIVE gets an active radar ping. */
 function StatusBadge({ status, label, className, ...props }: StatusBadgeProps) {
+  if (status === 'REGISTRATION_OPEN' || status === 'REGISTRATION_CLOSED') {
+    return null;
+  }
   const cfg = STATUS[status] ?? STATUS.COMPLETED;
   return (
     <span

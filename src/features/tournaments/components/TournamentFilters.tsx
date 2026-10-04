@@ -66,7 +66,9 @@ function TournamentFilters({ value, onChange, hideStatus }: TournamentFiltersPro
           onChange={(e) => set('status', e.target.value as TournamentStatus | '')}
         >
           <option value="">All statuses</option>
-          {TOURNAMENT_STATUSES.map((s) => (
+          {TOURNAMENT_STATUSES.filter(
+            (s) => s !== 'REGISTRATION_OPEN' && s !== 'REGISTRATION_CLOSED',
+          ).map((s) => (
             <option key={s} value={s}>
               {formatEnum(s)}
             </option>

@@ -112,9 +112,11 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
                   )}
                   {section === 'freefire' ? 'Free Fire Live' : 'BlastX E-Sports'}
                 </span>
-                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-lg backdrop-blur-md ${statusTone}`}>
-                  {formatEnum(t.status)}
-                </span>
+                {t.status !== 'REGISTRATION_OPEN' && t.status !== 'REGISTRATION_CLOSED' && (
+                  <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-lg backdrop-blur-md ${statusTone}`}>
+                    {formatEnum(t.status)}
+                  </span>
+                )}
               </div>
               <div className="absolute inset-x-4 bottom-4">
                 <span className="mb-1.5 inline-flex rounded-md border border-white/15 bg-black/35 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur">
