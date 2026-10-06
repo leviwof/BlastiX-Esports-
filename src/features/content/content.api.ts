@@ -4,8 +4,10 @@ import type {
   AnnouncementPage,
   Banner,
   BannerPage,
+  BrandPartner,
   CreateAnnouncementPayload,
   CreateBannerPayload,
+  CreateBrandPartnerPayload,
   CreateNoticePayload,
   ListContentQuery,
   LiveStream,
@@ -16,6 +18,7 @@ import type {
   UpdateLiveStreamPayload,
   UpdateAnnouncementPayload,
   UpdateBannerPayload,
+  UpdateBrandPartnerPayload,
   UpdateNoticePayload,
 } from './content.types';
 
@@ -95,6 +98,55 @@ export async function deleteLiveStream(id: string): Promise<void> {
 export async function listPartnerInquiries(): Promise<PartnerInquiry[]> {
   const response = await apiClient.get<PartnerInquiry[]>('/admin/partners/inquiries');
   return response.data;
+}
+
+export async function updatePartnerInquiryStatus(
+  id: string,
+  status: PartnerInquiry['status'],
+): Promise<PartnerInquiry> {
+  const response = await apiClient.patch<PartnerInquiry>(`/admin/partners/inquiries/${id}/status`, { status });
+  return response.data;
+}
+
+/* --------------------------------------------------------- brand partners */
+
+export async function listBrandPartners(): Promise<BrandPartner[]> {
+  const response = await apiClient.get<BrandPartner[]>('/admin/partners');
+  return response.data;
+}
+
+export async function createBrandPartner(
+  body: CreateBrandPartnerPayload,
+  logo?: File,
+): Promise<BrandPartner> {
+  if (logo) {
+    const formData = new FormData();
+    formData.append('logo', logo);
+    for (const [key, value] of Object.entries(body)) {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    }
+    const response = await apiClient.post<BrandPartner>('/admin/partners', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    });
+    return response.data;
+  }
+  const response = await apiClient.post<BrandPartner>('/admin/partners', body);
+  return response.data;
+}
+
+export async function updateBrandPartner(
+  id: string,
+  body: UpdateBrandPartnerPayload,
+): Promise<BrandPartner> {
+  const response = await apiClient.patch<BrandPartner>(`/admin/partners/${id}`, body);
+  return response.data;
+}
+
+export async function deleteBrandPartner(id: string): Promise<void> {
+  await apiClient.delete(`/admin/partners/${id}`);
 }
 
 /* --------------------------------------------------------- announcements */

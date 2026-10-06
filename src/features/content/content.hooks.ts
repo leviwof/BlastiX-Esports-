@@ -5,30 +5,38 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   createAnnouncement,
   createBanner,
+  createBrandPartner,
   createLiveStream,
   createNotice,
   deleteAnnouncement,
   deleteBanner,
+  deleteBrandPartner,
   deleteLiveStream,
   deleteNotice,
-  listLiveStreams,
-  listPartnerInquiries,
   listAnnouncements,
   listBanners,
+  listBrandPartners,
+  listLiveStreams,
   listNotices,
+  listPartnerInquiries,
   updateAnnouncement,
   updateBanner,
+  updateBrandPartner,
   updateLiveStream,
   updateNotice,
+  updatePartnerInquiryStatus,
 } from './content.api';
 import type {
   CreateAnnouncementPayload,
   CreateBannerPayload,
+  CreateBrandPartnerPayload,
   CreateNoticePayload,
   ListContentQuery,
   LiveStreamPayload,
+  PartnerInquiry,
   UpdateAnnouncementPayload,
   UpdateBannerPayload,
+  UpdateBrandPartnerPayload,
   UpdateLiveStreamPayload,
   UpdateNoticePayload,
 } from './content.types';
@@ -101,6 +109,66 @@ export function usePartnerInquiries() {
   return useQuery({
     queryKey: queryKeys.partnerInquiries,
     queryFn: listPartnerInquiries,
+  });
+}
+
+export function useUpdatePartnerInquiryStatus() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: PartnerInquiry['status'] }) =>
+      updatePartnerInquiryStatus(id, status),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.partnerInquiries });
+      toast.success('Inquiry status updated');
+    },
+    onError: onMutationError,
+  });
+}
+
+/* --------------------------------------------------------- brand partners */
+
+export function useBrandPartners() {
+  return useQuery({
+    queryKey: ['brand-partners'],
+    queryFn: listBrandPartners,
+  });
+}
+
+export function useCreateBrandPartner() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ body, logo }: { body: CreateBrandPartnerPayload; logo?: File }) =>
+      createBrandPartner(body, logo),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['brand-partners'] });
+      toast.success('Brand partner added');
+    },
+    onError: onMutationError,
+  });
+}
+
+export function useUpdateBrandPartner() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateBrandPartnerPayload }) =>
+      updateBrandPartner(id, body),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['brand-partners'] });
+      toast.success('Brand partner updated');
+    },
+    onError: onMutationError,
+  });
+}
+
+export function useDeleteBrandPartner() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteBrandPartner(id),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['brand-partners'] });
+      toast.success('Brand partner deleted');
+    },
+    onError: onMutationError,
   });
 }
 

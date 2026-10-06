@@ -80,6 +80,8 @@ export type UpdateLiveStreamPayload = Partial<LiveStreamPayload>;
 
 /* ------------------------------------------------------- partner inquiries */
 
+export type PartnerInquiryStatus = 'NEW' | 'IN_REVIEW' | 'CONTACTED' | 'CLOSED';
+
 export interface PartnerInquiry {
   id: string;
   brand_name: string;
@@ -88,8 +90,30 @@ export interface PartnerInquiry {
   phone: string;
   partnership_type: string;
   message: string;
+  status?: PartnerInquiryStatus;
   created_at: string;
 }
+
+/* --------------------------------------------------------- brand partners */
+
+export interface BrandPartner {
+  id: string;
+  name: string;
+  logo_url: string;
+  sort_order?: number;
+  is_active?: boolean;
+  created_at?: string;
+}
+
+export interface CreateBrandPartnerPayload {
+  name: string;
+  logo_url?: string;
+  sort_order?: number;
+  order?: number;
+  is_active?: boolean;
+}
+
+export type UpdateBrandPartnerPayload = Partial<CreateBrandPartnerPayload>;
 
 /* --------------------------------------------------------- announcements */
 
