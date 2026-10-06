@@ -81,19 +81,19 @@ function BannerForm({
         <Input id="banner-tagline" placeholder="OFFICIAL TOURNAMENT SERIES" {...register('tagline')} />
       </Field>
 
-      <Field label="Title" htmlFor="banner-title" required error={errors.title?.message}>
+      <Field label="Title (Optional)" htmlFor="banner-title" error={errors.title?.message}>
         <Input id="banner-title" placeholder="Season 5 is live" {...register('title')} />
       </Field>
 
-      <Field label="Subtitle" htmlFor="banner-subtitle" error={errors.subtitle?.message}>
+      <Field label="Subtitle (Optional)" htmlFor="banner-subtitle" error={errors.subtitle?.message}>
         <Textarea id="banner-subtitle" rows={2} placeholder="Bigger squads. Bigger battles." {...register('subtitle')} />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Brand badge" htmlFor="banner-brand-badge" error={errors.brand_badge?.message}>
+        <Field label="Brand badge (Optional)" htmlFor="banner-brand-badge" error={errors.brand_badge?.message}>
           <Input id="banner-brand-badge" placeholder="BLASTIX ARENA" {...register('brand_badge')} />
         </Field>
-        <Field label="Button text" htmlFor="banner-button-text" error={errors.button_text?.message}>
+        <Field label="Button text (Optional / Deprecated)" htmlFor="banner-button-text" error={errors.button_text?.message}>
           <Input id="banner-button-text" placeholder="REGISTER NOW" {...register('button_text')} />
         </Field>
       </div>

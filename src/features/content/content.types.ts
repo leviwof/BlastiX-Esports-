@@ -17,7 +17,7 @@ export type NoticeSeverity = (typeof NOTICE_SEVERITIES)[number];
 export interface Banner {
   id: string;
   tagline: string | null;
-  title: string;
+  title: string | null;
   subtitle: string | null;
   brand_badge: string | null;
   image_url: string;
@@ -35,7 +35,7 @@ export interface Banner {
 
 export interface CreateBannerPayload {
   tagline?: string;
-  title: string;
+  title?: string;
   subtitle?: string;
   brand_badge?: string;
   image_url: string;

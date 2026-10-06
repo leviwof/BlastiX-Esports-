@@ -29,7 +29,7 @@ function toEnum<T extends string>(value: string, allowed: readonly T[], fallback
 
 export const bannerFormSchema = z.object({
   tagline: z.string().trim().max(160, 'Keep the tagline under 160 characters'),
-  title: z.string().trim().min(1, 'Title is required').max(200, 'Keep the title under 200 characters'),
+  title: z.string().trim().max(200, 'Keep the title under 200 characters'),
   subtitle: z.string().trim().max(300, 'Keep the subtitle under 300 characters'),
   brand_badge: z.string().trim().max(120, 'Keep the badge under 120 characters'),
   button_text: z.string().trim().max(80, 'Keep the button text under 80 characters'),
@@ -64,7 +64,7 @@ export const createBannerDefaults: BannerFormValues = {
 export function bannerToFormValues(b: Banner): BannerFormValues {
   return {
     tagline: b.tagline ?? '',
-    title: b.title,
+    title: b.title ?? '',
     subtitle: b.subtitle ?? '',
     brand_badge: b.brand_badge ?? '',
     button_text: b.button_text ?? '',
@@ -81,7 +81,7 @@ export function bannerToFormValues(b: Banner): BannerFormValues {
 export function toBannerCreatePayload(values: BannerFormValues): CreateBannerPayload {
   return {
     tagline: values.tagline.trim() || undefined,
-    title: values.title.trim(),
+    title: values.title.trim() || undefined,
     subtitle: values.subtitle.trim() || undefined,
     brand_badge: values.brand_badge.trim() || undefined,
     button_text: values.button_text.trim() || undefined,
