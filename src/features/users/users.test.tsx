@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router-dom';
 import { UsersListPage } from '@/pages/UsersListPage';
+import { ProfileBadgeControls } from '@/features/users/components/ProfileBadgeControls';
 import { ApiError } from '@/lib/apiError';
 import type { ManagedUser, UserPage } from '@/features/users/users.types';
 import { listUsers, updateUser } from '@/features/users/users.api';
@@ -35,6 +36,8 @@ const androidUser: ManagedUser = {
   name: 'Player One',
   email: 'p1@example.com',
   profile_pic: null,
+  is_vip: false,
+  crown_badge_unlocked: false,
   role: 'PLAYER',
   is_active: true,
   xp: 1500,
@@ -50,6 +53,8 @@ const iosUser: ManagedUser = {
   name: 'iPhone Player',
   email: 'iphone@example.com',
   profile_pic: null,
+  is_vip: false,
+  crown_badge_unlocked: false,
   role: 'PLAYER',
   is_active: true,
   xp: 800,
@@ -68,6 +73,7 @@ function pageOf(items: ManagedUser[]): UserPage {
 
 const routes: RouteObject[] = [
   { path: '/users', element: <UsersListPage /> },
+  { path: '/profile-badges', element: <ProfileBadgeControls user={androidUser} /> },
   { path: '/users/:id', element: <p>detail placeholder</p> },
 ];
 
@@ -101,6 +107,15 @@ describe('user list', () => {
 });
 
 describe('user moderation & device actions', () => {
+  it('updates VIP status through PATCH /admin/users/:id', async () => {
+    vi.mocked(updateUser).mockResolvedValue({ ...androidUser, is_vip: true });
+    renderAt(routes, '/profile-badges');
+
+    fireEvent.click(screen.getByRole('switch', { name: /vip status/i }));
+
+    await waitFor(() => expect(updateUser).toHaveBeenCalledWith('u1', { is_vip: true }));
+  });
+
   it('bans a user via PATCH /admin/users/:id after confirming the dialog', async () => {
     vi.mocked(listUsers).mockResolvedValue(pageOf([androidUser]));
     vi.mocked(updateUser).mockResolvedValue({ ...androidUser, is_active: false });
@@ -128,4 +143,3 @@ describe('user moderation & device actions', () => {
     expect(screen.getByRole('button', { name: /send launch notification/i })).toBeTruthy();
   });
 });
-

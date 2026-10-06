@@ -52,7 +52,11 @@ function UsersTable({ users }: UsersTableProps) {
                 </Link>
               </td>
               <td className="px-5 py-3">
-                <Badge variant={u.role === 'ADMIN' ? 'default' : 'secondary'}>{u.role}</Badge>
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant={u.role === 'ADMIN' ? 'default' : 'secondary'}>{u.role}</Badge>
+                  {u.is_vip && <Badge variant="gold">VIP</Badge>}
+                  {u.crown_badge_unlocked && <Badge variant="warning">Crown</Badge>}
+                </div>
               </td>
               <td className="px-5 py-3">
                 <Badge variant={u.is_active ? 'success' : 'danger'}>

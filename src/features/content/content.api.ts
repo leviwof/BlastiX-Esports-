@@ -8,16 +8,20 @@ import type {
   CreateBannerPayload,
   CreateNoticePayload,
   ListContentQuery,
+  LiveStream,
+  LiveStreamPayload,
   Notice,
   NoticePage,
+  PartnerInquiry,
+  UpdateLiveStreamPayload,
   UpdateAnnouncementPayload,
   UpdateBannerPayload,
   UpdateNoticePayload,
 } from './content.types';
 
 /**
- * Content API — parallel CRUD over three resources (banners, announcements,
- * notices). The response interceptor unwraps `{ status, data }`, so
+ * Content API — CRUD over home content, announcements, and notices. The
+ * response interceptor unwraps `{ status, data }`, so
  * `response.data` is the payload; DELETE returns void (empty 2xx body).
  */
 
@@ -38,8 +42,23 @@ export async function listBanners(query: ListContentQuery = {}): Promise<BannerP
   const response = await apiClient.get<BannerPage>('/admin/banners', { params: cleanParams(query) });
   return response.data;
 }
-export async function createBanner(body: CreateBannerPayload): Promise<Banner> {
-  const response = await apiClient.post<Banner>('/admin/banners', body);
+export interface CreatedBanner {
+  id: string;
+  image_url: string;
+}
+
+export async function createBanner(body: CreateBannerPayload, image: File): Promise<CreatedBanner> {
+  const formData = new FormData();
+  formData.append('image', image);
+  for (const [key, value] of Object.entries(body)) {
+    if (key === 'image_url' || value === undefined) continue;
+    const fieldName = key === 'sort_order' ? 'order' : key;
+    formData.append(fieldName, String(value));
+  }
+  const response = await apiClient.post<CreatedBanner>('/admin/banners', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  });
   return response.data;
 }
 export async function updateBanner(id: string, body: UpdateBannerPayload): Promise<Banner> {
@@ -48,6 +67,34 @@ export async function updateBanner(id: string, body: UpdateBannerPayload): Promi
 }
 export async function deleteBanner(id: string): Promise<void> {
   await apiClient.delete(`/admin/banners/${id}`);
+}
+
+/* ----------------------------------------------------------- live streams */
+
+export async function listLiveStreams(): Promise<LiveStream[]> {
+  const response = await apiClient.get<LiveStream[]>('/admin/live-streams');
+  return response.data;
+}
+export async function createLiveStream(body: LiveStreamPayload): Promise<LiveStream> {
+  const response = await apiClient.post<LiveStream>('/admin/live-streams', body);
+  return response.data;
+}
+export async function updateLiveStream(
+  id: string,
+  body: UpdateLiveStreamPayload,
+): Promise<LiveStream> {
+  const response = await apiClient.patch<LiveStream>(`/admin/live-streams/${id}`, body);
+  return response.data;
+}
+export async function deleteLiveStream(id: string): Promise<void> {
+  await apiClient.delete(`/admin/live-streams/${id}`);
+}
+
+/* ------------------------------------------------------- partner inquiries */
+
+export async function listPartnerInquiries(): Promise<PartnerInquiry[]> {
+  const response = await apiClient.get<PartnerInquiry[]>('/admin/partners/inquiries');
+  return response.data;
 }
 
 /* --------------------------------------------------------- announcements */

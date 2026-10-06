@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DeviceBadge } from '@/features/users/components/DeviceBadge';
 import { NotifyIosModal } from '@/features/users/components/NotifyIosModal';
+import { ProfileBadgeControls } from '@/features/users/components/ProfileBadgeControls';
 import { UserActions } from '@/features/users/components/UserActions';
 import { useUser } from '@/features/users/users.hooks';
 import { formatDateTime } from '@/lib/format';
@@ -74,6 +75,8 @@ function UserDetailPage() {
           <Badge variant={user.is_active ? 'success' : 'danger'}>
             {user.is_active ? 'Active' : 'Banned'}
           </Badge>
+          {user.is_vip && <Badge variant="gold">VIP</Badge>}
+          {user.crown_badge_unlocked && <Badge variant="warning">Crown unlocked</Badge>}
           <DeviceBadge
             deviceType={user.device_type}
             deviceModel={user.device_model}
@@ -114,6 +117,8 @@ function UserDetailPage() {
             <InfoRow label="Last updated" value={formatDateTime(user.updated_at)} />
           </dl>
         </SectionCard>
+
+        <ProfileBadgeControls user={user} />
 
         {/* Device & Platform Details */}
         <SectionCard

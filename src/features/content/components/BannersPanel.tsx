@@ -17,6 +17,9 @@ import {
   toBannerCreatePayload,
   type BannerFormValues,
 } from '../content.schema';
+import { uploadAdminImage } from '@/lib/imageUpload';
+import { getErrorMessage } from '@/lib/apiError';
+import { toast } from 'sonner';
 import type { Banner } from '../content.types';
 import { BannerForm } from './BannerForm';
 
@@ -27,6 +30,7 @@ function BannersPanel() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Banner | 'new' | null>(null);
   const [deleting, setDeleting] = useState<Banner | null>(null);
+  const [uploadingEditImage, setUploadingEditImage] = useState(false);
 
   const { data, isPending, isError, error, refetch, isFetching } = useBanners({
     page,
@@ -38,12 +42,23 @@ function BannersPanel() {
 
   const closeForm = () => setEditing(null);
 
-  const submitForm = (values: BannerFormValues) => {
+  const submitForm = async (values: BannerFormValues, image?: File) => {
     const body = toBannerCreatePayload(values);
     if (editing === 'new') {
-      create.mutate(body, { onSuccess: closeForm });
+      if (image) create.mutate({ body, image }, { onSuccess: closeForm });
     } else if (editing) {
-      update.mutate({ id: editing.id, body }, { onSuccess: closeForm });
+      setUploadingEditImage(true);
+      try {
+        const imageUrl = image ? await uploadAdminImage(image) : undefined;
+        update.mutate(
+          { id: editing.id, body: { ...body, image_url: imageUrl ?? body.image_url } },
+          { onSuccess: closeForm },
+        );
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+      } finally {
+        setUploadingEditImage(false);
+      }
     }
   };
 
@@ -164,7 +179,7 @@ function BannersPanel() {
             key={editing === 'new' ? 'new' : editing.id}
             defaultValues={editing === 'new' ? createBannerDefaults : bannerToFormValues(editing)}
             onSubmit={submitForm}
-            submitting={create.isPending || update.isPending}
+            submitting={create.isPending || update.isPending || uploadingEditImage}
             submitLabel={editing === 'new' ? 'Create banner' : 'Save changes'}
             onCancel={closeForm}
           />

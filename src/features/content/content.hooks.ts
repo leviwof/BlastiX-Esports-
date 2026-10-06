@@ -5,15 +5,20 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   createAnnouncement,
   createBanner,
+  createLiveStream,
   createNotice,
   deleteAnnouncement,
   deleteBanner,
+  deleteLiveStream,
   deleteNotice,
+  listLiveStreams,
+  listPartnerInquiries,
   listAnnouncements,
   listBanners,
   listNotices,
   updateAnnouncement,
   updateBanner,
+  updateLiveStream,
   updateNotice,
 } from './content.api';
 import type {
@@ -21,8 +26,10 @@ import type {
   CreateBannerPayload,
   CreateNoticePayload,
   ListContentQuery,
+  LiveStreamPayload,
   UpdateAnnouncementPayload,
   UpdateBannerPayload,
+  UpdateLiveStreamPayload,
   UpdateNoticePayload,
 } from './content.types';
 
@@ -47,7 +54,8 @@ export function useBanners(query: ListContentQuery = {}) {
 export function useCreateBanner() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateBannerPayload) => createBanner(body),
+    mutationFn: ({ body, image }: { body: CreateBannerPayload; image: File }) =>
+      createBanner(body, image),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ['banners'] });
       toast.success('Banner created');
@@ -75,6 +83,59 @@ export function useDeleteBanner() {
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ['banners'] });
       toast.success('Banner deleted');
+    },
+    onError: onMutationError,
+  });
+}
+
+/* ----------------------------------------------------------- live streams */
+
+export function useLiveStreams() {
+  return useQuery({
+    queryKey: queryKeys.liveStreams,
+    queryFn: listLiveStreams,
+  });
+}
+
+export function usePartnerInquiries() {
+  return useQuery({
+    queryKey: queryKeys.partnerInquiries,
+    queryFn: listPartnerInquiries,
+  });
+}
+
+export function useCreateLiveStream() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: LiveStreamPayload) => createLiveStream(body),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.liveStreams });
+      toast.success('Live stream created');
+    },
+    onError: onMutationError,
+  });
+}
+
+export function useUpdateLiveStream() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateLiveStreamPayload }) =>
+      updateLiveStream(id, body),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.liveStreams });
+      toast.success('Live stream updated');
+    },
+    onError: onMutationError,
+  });
+}
+
+export function useDeleteLiveStream() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteLiveStream(id),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.liveStreams });
+      toast.success('Live stream deleted');
     },
     onError: onMutationError,
   });

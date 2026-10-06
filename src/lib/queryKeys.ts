@@ -51,6 +51,10 @@ export const queryKeys = {
   announcements: (params?: Record<string, unknown>) => ['announcements', params ?? {}] as const,
   /** Paginated notice list (GET /admin/notices), keyed by filters. */
   notices: (params?: Record<string, unknown>) => ['notices', params ?? {}] as const,
+  /** Configured home screen streams (GET /admin/live-streams). */
+  liveStreams: ['live-streams'] as const,
+  /** Recent submitted partner inquiries (GET /admin/partners/inquiries). */
+  partnerInquiries: ['partner-inquiries'] as const,
 
   /* ------------------------------------------------------- config / misc */
   /** App configuration (GET /config/init). */

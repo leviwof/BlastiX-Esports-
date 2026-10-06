@@ -16,10 +16,16 @@ export type NoticeSeverity = (typeof NOTICE_SEVERITIES)[number];
 
 export interface Banner {
   id: string;
+  tagline: string | null;
   title: string;
+  subtitle: string | null;
+  brand_badge: string | null;
   image_url: string;
+  button_text: string | null;
+  target_tab_index: number;
   link_url: string | null;
   sort_order: number;
+  order: number;
   is_active: boolean;
   starts_at: string | null;
   ends_at: string | null;
@@ -28,16 +34,62 @@ export interface Banner {
 }
 
 export interface CreateBannerPayload {
+  tagline?: string;
   title: string;
+  subtitle?: string;
+  brand_badge?: string;
   image_url: string;
+  button_text?: string;
+  target_tab_index?: number;
   link_url?: string;
   sort_order?: number;
+  order?: number;
   is_active?: boolean;
   starts_at?: string;
   ends_at?: string;
 }
 
 export type UpdateBannerPayload = Partial<CreateBannerPayload>;
+
+/* ----------------------------------------------------------- live streams */
+
+export interface LiveStream {
+  id: string;
+  title: string;
+  subtitle: string;
+  location: string;
+  viewer_count: string;
+  is_live: boolean;
+  is_official: boolean;
+  image_url: string;
+  stream_url: string;
+}
+
+export interface LiveStreamPayload {
+  title: string;
+  subtitle: string;
+  location: string;
+  viewer_count: string;
+  is_live: boolean;
+  is_official: boolean;
+  image_url: string;
+  stream_url: string;
+}
+
+export type UpdateLiveStreamPayload = Partial<LiveStreamPayload>;
+
+/* ------------------------------------------------------- partner inquiries */
+
+export interface PartnerInquiry {
+  id: string;
+  brand_name: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  partnership_type: string;
+  message: string;
+  created_at: string;
+}
 
 /* --------------------------------------------------------- announcements */
 

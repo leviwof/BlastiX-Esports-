@@ -19,6 +19,8 @@ export interface ManagedUser {
   name: string;
   email: string;
   profile_pic: string | null;
+  is_vip?: boolean;
+  crown_badge_unlocked?: boolean;
   /** Backend enum, mapped to PLAYER | ADMIN — typed wide (like tournament status) for safety. */
   role: string;
   is_active: boolean;
@@ -59,6 +61,8 @@ export interface ListUsersQuery {
 /** PATCH /admin/users/:id — ban / unban, role change, and/or device status. */
 export interface UpdateUserPayload {
   is_active?: boolean;
+  is_vip?: boolean;
+  crown_badge_unlocked?: boolean;
   role?: UserRole;
   device_type?: string;
   ios_waitlist?: boolean;
