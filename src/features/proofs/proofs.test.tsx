@@ -140,4 +140,30 @@ describe('proof verification', () => {
     expect(frame.tagName).toBe('IFRAME');
     expect(frame.getAttribute('src')).toBe(externalProof.proof_url);
   });
+
+  it('renders round selector tabs and switches videos for multi-round proof submissions', async () => {
+    const multiRoundProof: Proof = {
+      ...proof,
+      proof_url: JSON.stringify([
+        { round: 'Round 1', url: 'https://drive.google.com/file/d/drive-file-r1/preview' },
+        { round: 'Round 2', url: 'https://drive.google.com/file/d/drive-file-r2/preview' },
+      ]),
+    };
+    vi.mocked(listProofs).mockResolvedValue(pageOf([multiRoundProof]));
+    renderAt(routes, '/proofs');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Watch Video' }));
+
+    const r1Tab = await screen.findByRole('button', { name: 'Round 1' });
+    const r2Tab = await screen.findByRole('button', { name: 'Round 2' });
+    expect(r1Tab).toBeTruthy();
+    expect(r2Tab).toBeTruthy();
+
+    let video = await screen.findByTitle('Proof recording');
+    expect(video.getAttribute('src')).toContain('/v1/proofs/stream/drive-file-r1');
+
+    fireEvent.click(r2Tab);
+    video = await screen.findByTitle('Proof recording');
+    expect(video.getAttribute('src')).toContain('/v1/proofs/stream/drive-file-r2');
+  });
 });

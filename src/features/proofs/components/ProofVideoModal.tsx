@@ -35,12 +35,44 @@ function statusVariant(status: string): 'warning' | 'danger' | 'success' | 'defa
   }
 }
 
+export interface ProofRoundItem {
+  round: string;
+  url: string;
+}
+
+function parseProofRounds(proofUrl: string | null): ProofRoundItem[] {
+  if (!proofUrl) return [];
+  try {
+    const parsed = JSON.parse(proofUrl);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed
+        .map((item, idx) => ({
+          round: item.round || item.title || item.name || `Round ${idx + 1}`,
+          url: item.url || item.link || '',
+        }))
+        .filter((item) => Boolean(item.url));
+    }
+  } catch {
+    // Single string URL fallback
+  }
+  return [{ round: 'Round 1', url: proofUrl }];
+}
+
 /**
  * Play Google Drive recordings using a native video tag streamed through the backend
  * to preserve aspect ratio, enable seeking, and support custom styling.
  */
 function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
-  const url = proof?.proof_url ?? null;
+  const rounds = parseProofRounds(proof?.proof_url ?? null);
+  const [selectedRoundIndex, setSelectedRoundIndex] = useState(0);
+
+  useEffect(() => {
+    setUseDriveEmbed(false);
+    setSelectedRoundIndex(0);
+  }, [proof?.proof_url]);
+
+  const activeRound = rounds[selectedRoundIndex] || rounds[0] || null;
+  const url = activeRound?.url ?? null;
   const isDrive = url ? /drive\.google\.com/i.test(url) : false;
   const driveFileId = isDrive ? getFileId(url) : null;
 
@@ -52,16 +84,18 @@ function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
 
   const [useDriveEmbed, setUseDriveEmbed] = useState(false);
 
-  useEffect(() => {
-    setUseDriveEmbed(false);
-  }, [url]);
-
   return (
     <Modal
       open={Boolean(proof)}
       onClose={onClose}
       title="Proof recording"
-      description={proof ? `${proof.user.name} — "${proof.challenge.title}"` : undefined}
+      description={
+        proof
+          ? `${proof.user.name} — "${proof.challenge.title}"${
+              rounds.length > 1 ? ` (${activeRound?.round || ''})` : ''
+            }`
+          : undefined
+      }
       className="max-w-4xl"
       footer={
         url ? (
@@ -74,6 +108,28 @@ function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
         ) : undefined
       }
     >
+      {rounds.length > 1 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-surface/30 p-2.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+            Rounds ({rounds.length}):
+          </span>
+          {rounds.map((r, idx) => (
+            <Button
+              key={idx}
+              size="sm"
+              variant={selectedRoundIndex === idx ? 'default' : 'outline'}
+              onClick={() => {
+                setUseDriveEmbed(false);
+                setSelectedRoundIndex(idx);
+              }}
+              className="h-7 px-3 text-xs font-medium"
+            >
+              {r.round}
+            </Button>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex w-full items-center justify-center rounded-xl border border-border bg-black lg:w-[360px] shrink-0 overflow-hidden min-h-[200px]">
           {url && streamUrl && !useDriveEmbed ? (
