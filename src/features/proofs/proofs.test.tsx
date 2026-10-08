@@ -106,9 +106,7 @@ describe('proof verification', () => {
 
     const video = await screen.findByTitle('Proof recording');
     expect(video.tagName).toBe('VIDEO');
-    expect(video.getAttribute('src')).toBe(
-      'https://drive.google.com/uc?export=download&id=drive-file-123',
-    );
+    expect(video.getAttribute('src')).toContain('/v1/proofs/stream/drive-file-123');
     expect(video.className).toContain('object-contain');
     expect(
       screen.getByRole('link', { name: /open in/i }).getAttribute('href'),

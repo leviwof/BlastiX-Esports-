@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Modal } from '@/components/shared/Modal';
 import { Button } from '@/components/ui/button';
+import { env } from '@/lib/env';
+import { getToken } from '@/lib/apiClient';
 import type { Proof } from '../proofs.types';
 
 export interface ProofVideoModalProps {
@@ -10,19 +12,27 @@ export interface ProofVideoModalProps {
   onClose: () => void;
 }
 
+function getFileId(url: string | null): string | null {
+  if (!url) return null;
+  const match = url.match(/\/d\/([^/?]+)/) || url.match(/\/file\/d\/([^/?]+)/) || url.match(/id=([^&]+)/);
+  return match ? match[1] : null;
+}
+
 /**
- * Play public Google Drive recordings with the native video controls so their
- * source aspect ratio is preserved. Fall back to Drive's embed if direct playback
- * is unavailable for a particular file.
+ * Play Google Drive recordings using a native video tag streamed through the backend
+ * to preserve aspect ratio, enable seeking, and support custom styling.
  */
 function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
   const url = proof?.proof_url ?? null;
   const isDrive = url ? /drive\.google\.com/i.test(url) : false;
-  const driveFileId = url?.match(/\/file\/d\/([^/?]+)/)?.[1] ?? null;
-  const directVideoUrl =
-    driveFileId && isDrive
-      ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveFileId)}`
-      : null;
+  const driveFileId = isDrive ? getFileId(url) : null;
+
+  const token = getToken();
+  const apiBase = env.apiBaseUrl ? env.apiBaseUrl.replace(/\/+$/, '') : '';
+  const streamUrl = driveFileId
+    ? `${apiBase}/v1/proofs/stream/${driveFileId}${token ? `?token=${encodeURIComponent(token)}` : ''}`
+    : null;
+
   const [useDriveEmbed, setUseDriveEmbed] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
 
@@ -49,7 +59,7 @@ function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
         ) : undefined
       }
     >
-      {url && directVideoUrl && !useDriveEmbed ? (
+      {url && streamUrl && !useDriveEmbed ? (
         <div
           className="mx-auto flex w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-black"
           style={{
@@ -58,8 +68,8 @@ function ProofVideoModal({ proof, onClose }: ProofVideoModalProps) {
           }}
         >
           <video
-            key={url}
-            src={directVideoUrl}
+            key={streamUrl}
+            src={streamUrl}
             title="Proof recording"
             controls
             playsInline
