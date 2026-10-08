@@ -49,7 +49,7 @@ function LoginPage() {
         <div className="flex flex-col items-center text-center">
           <img
             src="/logo.png"
-            alt="BlastiX Esports"
+            alt="BlastiX Arena"
             className="h-12 w-auto object-contain"
           />
           <h1 className="mt-4 font-display text-lg font-bold tracking-wide text-foreground">

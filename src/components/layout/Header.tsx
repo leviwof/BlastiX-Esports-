@@ -61,12 +61,12 @@ function Header({ onMenuClick, onToggleSidebar, sidebarOpen = true, onLogout }: 
       <div className={cn('items-center gap-2', sidebarOpen ? 'flex lg:hidden' : 'flex')}>
         <img
           src="/logo-mark.png"
-          alt="BlastiX Esports"
+          alt="BlastiX Arena"
           className="h-8 w-8 object-contain drop-shadow-[0_0_8px_rgba(17,251,190,0.5)]"
         />
         {!sidebarOpen && (
           <span className="hidden sm:inline font-display text-xs font-black uppercase tracking-wider text-primary">
-            BlastiX Esports
+            BlastiX Arena
           </span>
         )}
       </div>

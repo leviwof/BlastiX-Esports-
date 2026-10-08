@@ -152,7 +152,7 @@ function Sidebar({ variant = 'desktop', onNavigate, onToggleCollapse }: SidebarP
         {/* Compact emblem — fits the narrow icon rail */}
         <img
           src="/logo-mark.png"
-          alt="BlastiX Esports"
+          alt="BlastiX Arena"
           className={cn(
             'h-10 w-10 shrink-0 object-contain drop-shadow-[0_0_12px_rgba(17,251,190,0.45)] transition-transform hover:scale-105',
             rail ? 'block xl:hidden' : 'hidden',
@@ -162,7 +162,7 @@ function Sidebar({ variant = 'desktop', onNavigate, onToggleCollapse }: SidebarP
         <div className={cn('flex items-center min-w-0', rail ? 'hidden xl:flex' : 'flex')}>
           <img
             src="/logo.png"
-            alt="BlastiX Esports"
+            alt="BlastiX Arena"
             className="h-8 w-auto object-contain drop-shadow-[0_0_14px_rgba(17,251,190,0.4)]"
           />
         </div>
