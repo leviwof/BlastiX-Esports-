@@ -165,12 +165,15 @@ export interface CreateTournamentPayload {
   banner_url?: string;
   format: TournamentFormat;
   team_mode: TeamMode;
-  map: string;
+  map?: string;
   max_slots: number;
   entry_fee?: number;
   prize_pool?: number;
   prize_distribution?: unknown;
   rules?: unknown;
+  schedule?: unknown;
+  booyah_bonus?: number;
+  per_kill_reward?: number;
   registration_opens_at: string;
   registration_closes_at: string;
   starts_at: string;
