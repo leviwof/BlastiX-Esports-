@@ -12,6 +12,7 @@ import { RoomDialog } from '@/features/tournaments/components/RoomDialog';
 import { ParticipantsPanel } from '@/features/tournaments/components/ParticipantsPanel';
 import { MatchesPanel } from '@/features/tournaments/components/MatchesPanel';
 import { LeaderboardPanel } from '@/features/tournaments/components/LeaderboardPanel';
+import { TournamentStageControlHub } from '@/features/tournaments/brackets/components/TournamentStageControlHub';
 import { useTournament } from '@/features/tournaments/tournaments.hooks';
 import { formatDateTime, formatEnum } from '@/features/tournaments/tournaments.utils';
 import type { Tournament } from '@/features/tournaments/tournaments.types';
@@ -82,6 +83,14 @@ function TournamentDetailPage() {
 
         <SectionCard title="Lifecycle" description="Change the tournament status or finalize standings.">
           <StatusControl tournament={t} />
+        </SectionCard>
+
+        {/* Tournament Bracket & Stage Progression Engine */}
+        <SectionCard
+          title="Stage Control Hub"
+          description="Multi-round progression engine: monitor groups, enter match scores, resolve tie-breakers, manage wild card slots, and assemble the grand final."
+        >
+          <TournamentStageControlHub tournamentId={t.id} />
         </SectionCard>
 
         <SectionCard title="Overview">
