@@ -36,6 +36,10 @@ export interface NavItem {
 export interface NavGroup {
   /** Section heading shown above the group (omitted for the top item). */
   label?: string;
+  /** Unique key or ID for collapsible state persistence */
+  id?: string;
+  /** Icon displayed next to group heading */
+  icon?: LucideIcon;
   /** Optional accent used to make the two tournament areas easy to distinguish. */
   accent?: 'freefire' | 'blastx';
   items: NavItem[];
@@ -44,10 +48,13 @@ export interface NavGroup {
 /** Sidebar navigation, grouped by area of work with distinct Free Fire Live & BlastX sections. */
 export const NAV_GROUPS: NavGroup[] = [
   {
+    id: 'dashboard',
     items: [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, support: 'derived' }],
   },
   {
+    id: 'freefire',
     label: 'Free Fire Live',
+    icon: Flame,
     accent: 'freefire',
     items: [
       { label: 'Live Tournaments', to: '/freefire/live', icon: Radio, support: 'full', badge: 'live' },
@@ -56,7 +63,9 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    id: 'blastx',
     label: 'BLASTiX E-Sports',
+    icon: Zap,
     accent: 'blastx',
     items: [
       { label: 'Live Tournaments', to: '/blastx/live', icon: Zap, support: 'full' },
@@ -65,7 +74,9 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    id: 'competition',
     label: 'Competition Hub',
+    icon: Trophy,
     items: [
       { label: 'All Tournaments', to: '/tournaments', icon: Trophy, support: 'full' },
       { label: 'Matches', to: '/matches', icon: Swords, support: 'full' },
@@ -74,21 +85,27 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    id: 'community',
     label: 'Community',
+    icon: Users2,
     items: [
       { label: 'Users', to: '/users', icon: Users, support: 'full' },
       { label: 'Teams', to: '/teams', icon: Users2, support: 'read' },
     ],
   },
   {
+    id: 'moderation',
     label: 'Moderation',
+    icon: ShieldCheck,
     items: [
       { label: 'Proof Verification', to: '/proofs', icon: ShieldCheck, support: 'full', badge: 'pendingProofs' },
       { label: 'Challenges', to: '/challenges', icon: Target, support: 'full' },
     ],
   },
   {
+    id: 'system',
     label: 'System',
+    icon: Settings,
     items: [
       { label: 'Content', to: '/content', icon: Megaphone, support: 'full' },
       { label: 'Settings', to: '/settings', icon: Settings, support: 'full' },
