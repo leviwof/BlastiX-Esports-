@@ -12,11 +12,11 @@ function BlastXLivePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="⚡ BlastX E-Sports Live Tournaments"
-        description="Monitor and control all active BlastX tournaments. Release room passwords, record kills & placement, and finalize leaderboards."
+        title="⚡ BLASTiX E-Sports Live Tournaments"
+        description="Monitor and control all active BLASTiX tournaments. Release room passwords, record kills & placement, and finalize leaderboards."
         breadcrumbs={[
           { label: 'Admin', to: '/dashboard' },
-          { label: 'BlastX E-Sports', to: '/blastx/tournaments' },
+          { label: 'BLASTiX E-Sports', to: '/blastx/tournaments' },
           { label: 'Live Arena' },
         ]}
         actions={
@@ -30,7 +30,7 @@ function BlastXLivePage() {
             <Button asChild size="sm">
               <Link to="/blastx/tournaments/new">
                 <Plus className="h-4 w-4 mr-1" />
-                New BlastX Tournament
+                New BLASTiX Tournament
               </Link>
             </Button>
           </div>

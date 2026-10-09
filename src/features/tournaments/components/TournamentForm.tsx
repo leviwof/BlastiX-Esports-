@@ -94,9 +94,9 @@ function TournamentForm({
                   <Zap className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-foreground">⚡ BlastX E-Sports Tournament</div>
+                  <div className="text-xs font-bold text-foreground">⚡ BLASTiX E-Sports Tournament</div>
                   <div className="text-[11px] text-foreground-muted">
-                    This tournament will appear only in the BlastX E-Sports section of the mobile app.
+                    This tournament will appear only in the BLASTiX E-Sports section of the mobile app.
                   </div>
                 </div>
               </>
@@ -131,8 +131,8 @@ function TournamentForm({
             >
               <Zap className={`h-4 w-4 ${currentSection === 'blastx' ? 'text-primary' : 'text-foreground-muted'}`} />
               <div>
-                <div className="text-xs font-bold">⚡ BlastX E-Sports</div>
-                <div className="text-[10px] text-foreground-muted">BlastX App Section</div>
+                <div className="text-xs font-bold">⚡ BLASTiX E-Sports</div>
+                <div className="text-[10px] text-foreground-muted">BLASTiX App Section</div>
               </div>
             </button>
           </div>

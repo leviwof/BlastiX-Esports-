@@ -110,7 +110,7 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
                   ) : (
                     <Zap className="h-3 w-3" aria-hidden="true" />
                   )}
-                  {section === 'freefire' ? 'Free Fire Live' : 'BlastX E-Sports'}
+                  {section === 'freefire' ? 'Free Fire Live' : 'BLASTiX E-Sports'}
                 </span>
                 {t.status !== 'REGISTRATION_OPEN' && t.status !== 'REGISTRATION_CLOSED' && (
                   <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-lg backdrop-blur-md ${statusTone}`}>

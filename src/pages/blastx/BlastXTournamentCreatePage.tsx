@@ -23,11 +23,11 @@ function BlastXTournamentCreatePage() {
   return (
     <div>
       <PageHeader
-        title="⚡ Create BlastX Tournament"
-        description="Set up a new BlastX E-Sports tournament (Live or Upcoming). The tournament will appear exclusively in the BlastX section of the mobile app."
+        title="⚡ Create BLASTiX Tournament"
+        description="Set up a new BLASTiX E-Sports tournament (Live or Upcoming). The tournament will appear exclusively in the BLASTiX section of the mobile app."
         breadcrumbs={[
           { label: 'Admin', to: '/dashboard' },
-          { label: 'BlastX E-Sports', to: '/blastx/tournaments' },
+          { label: 'BLASTiX E-Sports', to: '/blastx/tournaments' },
           { label: 'Create New' },
         ]}
       />
@@ -37,7 +37,7 @@ function BlastXTournamentCreatePage() {
           lockSection="blastx"
           onSubmit={handleSubmit}
           submitting={create.isPending}
-          submitLabel="Create BlastX Tournament"
+          submitLabel="Create BLASTiX Tournament"
           onCancel={() => navigate('/blastx/tournaments')}
         />
       </SectionCard>

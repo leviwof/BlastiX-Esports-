@@ -56,7 +56,7 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'BlastX E-Sports',
+    label: 'BLASTiX E-Sports',
     accent: 'blastx',
     items: [
       { label: 'Live Tournaments', to: '/blastx/live', icon: Zap, support: 'full' },

@@ -217,7 +217,7 @@ function Sidebar({ variant = 'desktop', onNavigate, onToggleCollapse }: SidebarP
             {group.label && (
               <p className={cn('flex items-center gap-2 px-2.5 pb-1.5 pt-0.5 text-[10px] font-bold uppercase tracking-[0.16em]', groupLabelClass, headingTone)}>
                 {GroupIcon && <GroupIcon className="h-3.5 w-3.5" aria-hidden="true" />}
-                <span className="truncate">{group.label}</span>
+                <span className={cn('truncate', group.accent === 'blastx' && 'normal-case tracking-[0.14em]')}>{group.label}</span>
                 {group.accent && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />}
               </p>
             )}

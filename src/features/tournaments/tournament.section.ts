@@ -56,7 +56,7 @@ export function getTournamentSection(t: {
 /** Strips internal tag prefix from tournament title for display. */
 export function cleanTournamentTitle(title: string): string {
   if (!title) return '';
-  return title.replace(/^\[(FF Live|BlastX|Free Fire)\]\s*/i, '').trim();
+  return title.replace(/^\[(FF Live|BlastX|BLASTiX|Free Fire)\]\s*/i, '').trim();
 }
 
 /** Formats title with section tag on save. */

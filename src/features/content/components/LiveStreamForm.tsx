@@ -86,7 +86,7 @@ function LiveStreamForm({
         <Switch
           id="stream-official"
           label="Official stream"
-          hint="Mark this as an official BlastX stream."
+          hint="Mark this as an official BLASTiX stream."
           {...register('is_official')}
         />
       </div>

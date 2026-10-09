@@ -13,11 +13,11 @@ function BlastXTournamentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="⚡ Manage BlastX E-Sports Tournaments"
-        description="View and manage all BlastX tournaments. Edit tournament details, update player rosters, configure room credentials, and delete/cancel tournaments."
+        title="⚡ Manage BLASTiX E-Sports Tournaments"
+        description="View and manage all BLASTiX tournaments. Edit tournament details, update player rosters, configure room credentials, and delete/cancel tournaments."
         breadcrumbs={[
           { label: 'Admin', to: '/dashboard' },
-          { label: 'BlastX E-Sports', to: '/blastx/live' },
+          { label: 'BLASTiX E-Sports', to: '/blastx/live' },
           { label: 'Manage' },
         ]}
         actions={
@@ -31,7 +31,7 @@ function BlastXTournamentsPage() {
             <Button asChild size="sm">
               <Link to="/blastx/tournaments/new">
                 <Plus className="h-4 w-4 mr-1" />
-                New BlastX Tournament
+                New BLASTiX Tournament
               </Link>
             </Button>
           </div>
@@ -41,8 +41,8 @@ function BlastXTournamentsPage() {
       <TournamentBrowser
         filterSection="blastx"
         showActions
-        emptyTitle="No BlastX tournaments found"
-        emptyDescription="Create your first BlastX tournament to start hosting competitive matches."
+        emptyTitle="No BLASTiX tournaments found"
+        emptyDescription="Create your first BLASTiX tournament to start hosting competitive matches."
       />
     </div>
   );

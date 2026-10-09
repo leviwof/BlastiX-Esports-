@@ -93,7 +93,7 @@ describe('Free Fire Live & BlastX Separate Tournament Management', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByRole('heading', { name: /manage blastx e-sports tournaments/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /manage blasti?x e-sports tournaments/i })).toBeTruthy();
     expect(await screen.findByText('Winter Clan Wars')).toBeTruthy();
     // Free Fire tournament should not be shown in BlastX section
     expect(screen.queryByText('FFWS Championship')).toBeNull();
@@ -143,7 +143,7 @@ describe('Free Fire Live & BlastX Separate Tournament Management', () => {
     fireEvent.change(screen.getByLabelText(/registration closes/i), { target: { value: '2026-10-02T10:00' } });
     fireEvent.change(screen.getByLabelText(/starts at/i), { target: { value: '2026-10-03T10:00' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /create blastx tournament/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create blasti?x tournament/i }));
 
     await waitFor(() => expect(createTournament).toHaveBeenCalledTimes(1));
     expect(createTournament).toHaveBeenCalledWith(
