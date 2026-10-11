@@ -3,23 +3,24 @@ import { Shield, Flame, Swords, Trophy, Sparkles, CheckCircle2, Clock, AlertTria
 import { cn } from '@/lib/utils';
 import type { TournamentRound, RoundStatus } from '../types/brackets.types';
 
-export type StageKey = 'ROUND_1' | 'ROUND_2' | 'WILDCARD' | 'ROUND_3' | 'GRAND_FINAL';
+export type StageKey = string;
 
-interface TournamentStageStepperProps {
-  currentStage: StageKey;
-  onSelectStage: (stage: StageKey) => void;
-  rounds: TournamentRound[];
-  wildCardStatus?: 'CLOSED' | 'OPEN' | 'LOCKED';
-}
-
-interface StageStepConfig {
-  key: StageKey;
+export interface StageStepConfig {
+  key: string;
   title: string;
   subtitle: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
 }
 
-const STAGES: StageStepConfig[] = [
+export interface TournamentStageStepperProps {
+  currentStage: string;
+  onSelectStage: (stage: string) => void;
+  rounds: TournamentRound[];
+  wildCardStatus?: 'CLOSED' | 'OPEN' | 'LOCKED';
+  customStages?: StageStepConfig[];
+}
+
+const DEFAULT_STAGES: StageStepConfig[] = [
   {
     key: 'ROUND_1',
     title: 'Round 1',
@@ -57,15 +58,22 @@ export function TournamentStageStepper({
   onSelectStage,
   rounds,
   wildCardStatus = 'CLOSED',
+  customStages,
 }: TournamentStageStepperProps) {
-  const getRoundStatus = (key: StageKey): { status: RoundStatus | 'OPEN' | 'LOCKED' | 'NOT_STARTED'; label: string } => {
+  const stagesToRender = customStages && customStages.length > 0 ? customStages : DEFAULT_STAGES;
+
+  const getRoundStatus = (key: string, idx: number): { status: RoundStatus | 'OPEN' | 'LOCKED' | 'NOT_STARTED'; label: string } => {
     if (key === 'WILDCARD') {
       if (wildCardStatus === 'OPEN') return { status: 'LIVE' as RoundStatus, label: 'OPEN' };
       if (wildCardStatus === 'LOCKED') return { status: 'COMPLETED' as RoundStatus, label: 'LOCKED' };
       return { status: 'SCHEDULED' as RoundStatus, label: 'CLOSED' };
     }
 
-    const found = rounds.find((r) => r.roundType === key);
+    const found =
+      rounds.find((r) => r.roundType === key) ||
+      rounds.find((r) => r.roundNumber === idx + 1) ||
+      rounds.find((r) => r.id === key);
+
     if (!found) return { status: 'NOT_STARTED', label: 'PENDING' };
     return { status: found.status, label: found.status.replace('_', ' ') };
   };
@@ -112,14 +120,23 @@ export function TournamentStageStepper({
             BLASTiX Multi-Round Progression Engine
           </span>
         </div>
-        <span className="text-xs text-foreground-muted">5 Stages Control</span>
+        <span className="text-xs text-foreground-muted">{stagesToRender.length} Stages Control</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
-        {STAGES.map((stage, idx) => {
+      <div
+        className={cn(
+          'grid grid-cols-2 gap-2 sm:gap-3',
+          stagesToRender.length <= 3
+            ? 'sm:grid-cols-3'
+            : stagesToRender.length === 4
+            ? 'sm:grid-cols-4'
+            : 'sm:grid-cols-5'
+        )}
+      >
+        {stagesToRender.map((stage, idx) => {
           const isSelected = currentStage === stage.key;
-          const statusObj = getRoundStatus(stage.key);
-          const Icon = stage.icon;
+          const statusObj = getRoundStatus(stage.key, idx);
+          const Icon = stage.icon || Swords;
 
           return (
             <button

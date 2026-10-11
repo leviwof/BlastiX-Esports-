@@ -160,9 +160,21 @@ export const tournamentFormSchema = z
     starts_at: z.string().min(1, 'Start time is required'),
     rules: z.string().optional(),
     enable_roadmap: z.boolean().optional(),
-    roadmap_type: z.enum(['5_STAGE_STANDARD', '3_STAGE_PLAYOFFS', 'SINGLE_STAGE_LOBBY']).optional(),
+    roadmap_type: z.string().optional(),
+    format_engine_mode: z.enum(['SQUAD_BR', 'DUO_BR', 'SOLO_BR', 'CLASH_SQUAD']).optional(),
+    format_is_valid: z.boolean().optional(),
+    roadmap_data: z.any().optional(),
+    format_config: z.any().optional(),
   })
   .superRefine((values, ctx) => {
+    if (values.format_is_valid === false) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['max_slots'],
+        message: 'Invalid tournament capacity: does not match lobby rules',
+      });
+    }
+
     const opens = new Date(values.registration_opens_at).getTime();
     const closes = new Date(values.registration_closes_at).getTime();
     const starts = new Date(values.starts_at).getTime();
@@ -207,7 +219,11 @@ export const createDefaultValues: TournamentFormValues = {
   starts_at: '',
   rules: '',
   enable_roadmap: true,
-  roadmap_type: '5_STAGE_STANDARD',
+  roadmap_type: 'FORMAT_ENGINE',
+  format_engine_mode: 'SQUAD_BR',
+  format_is_valid: true,
+  roadmap_data: undefined,
+  format_config: undefined,
 };
 
 /** `rules` (backend `unknown`) → newline text for the textarea. */
@@ -318,8 +334,9 @@ export function toCreatePayload(
   }
 
   // Requirement 3: Stages & Bracket Roadmap configuration
+  const dynamicStages = values.roadmap_data?.stages || (Array.isArray(values.roadmap_data) ? values.roadmap_data : undefined);
   const stages = values.enable_roadmap
-    ? PRESET_ROADMAPS[values.roadmap_type || '5_STAGE_STANDARD'] || PRESET_ROADMAPS['5_STAGE_STANDARD']
+    ? dynamicStages || PRESET_ROADMAPS[values.roadmap_type || '5_STAGE_STANDARD'] || PRESET_ROADMAPS['5_STAGE_STANDARD']
     : undefined;
 
   const textRules = textToRules(values.rules);
@@ -355,6 +372,8 @@ export function toCreatePayload(
     per_kill_reward: values.per_kill_reward && values.per_kill_reward > 0 ? values.per_kill_reward : undefined,
     rules: finalRules,
     schedule: schedulePayload,
+    roadmap_data: values.roadmap_data || stages,
+    format_plan: values.format_config || values.roadmap_data,
     registration_opens_at: fromDateTimeLocal(values.registration_opens_at) as string,
     registration_closes_at: fromDateTimeLocal(values.registration_closes_at) as string,
     starts_at: fromDateTimeLocal(values.starts_at) as string,

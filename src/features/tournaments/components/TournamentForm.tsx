@@ -12,22 +12,22 @@ import { TEAM_MODES, TOURNAMENT_FORMATS } from '../tournaments.types';
 import { formatEnum } from '../tournaments.utils';
 import {
   tournamentFormSchema,
-  PRESET_ROADMAPS,
   type TournamentFormValues,
 } from '../tournament.schema';
 import type { TournamentSection } from '../tournament.section';
+import {
+  FormatEngineSelector,
+  type GameMode,
+  type ValidFormatOption,
+  type FormatEngineValidationResult,
+} from '../format-engine';
 import {
   Flame,
   Zap,
   MapPin,
   Check,
   Trophy,
-  Swords,
-  Shield,
-  Sparkles,
-  Layers,
-  ChevronRight,
-  Info,
+  AlertTriangle,
 } from 'lucide-react';
 
 const MAP_OPTIONS = ['Bermuda', 'Purgatory', 'Kalahari', 'Alpine', 'Nexterra'];
@@ -74,8 +74,6 @@ function TournamentForm({
   const currentSection = watch('section') ?? lockSection ?? 'freefire';
   const bannerUrl = watch('banner_url') ?? '';
   const selectedMaps = watch('maps') || [];
-  const enableRoadmap = watch('enable_roadmap') ?? true;
-  const roadmapType = watch('roadmap_type') ?? '5_STAGE_STANDARD';
 
   // Toggle map pill
   const toggleMap = (mapName: string) => {
@@ -103,7 +101,53 @@ function TournamentForm({
   const gameOptions =
     games && games.length > 0 ? games : [{ slug: 'free_fire', name: 'Free Fire' }];
 
-  const currentStages = PRESET_ROADMAPS[roadmapType] || PRESET_ROADMAPS['5_STAGE_STANDARD'];
+  const format = watch('format');
+  const teamMode = watch('team_mode');
+  const maxSlots = watch('max_slots') || 48;
+
+  const engineMode: GameMode =
+    format === 'CLASH_SQUAD'
+      ? 'CLASH_SQUAD'
+      : teamMode === 'DUO'
+      ? 'DUO_BR'
+      : teamMode === 'SOLO'
+      ? 'SOLO_BR'
+      : 'SQUAD_BR';
+
+  const handleEngineModeChange = (newMode: GameMode) => {
+    if (newMode === 'CLASH_SQUAD') {
+      setValue('format', 'CLASH_SQUAD', { shouldDirty: true, shouldValidate: true });
+      setValue('team_mode', 'SQUAD', { shouldDirty: true, shouldValidate: true });
+    } else if (newMode === 'DUO_BR') {
+      setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
+      setValue('team_mode', 'DUO', { shouldDirty: true, shouldValidate: true });
+    } else if (newMode === 'SOLO_BR') {
+      setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
+      setValue('team_mode', 'SOLO', { shouldDirty: true, shouldValidate: true });
+    } else {
+      setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
+      setValue('team_mode', 'SQUAD', { shouldDirty: true, shouldValidate: true });
+    }
+  };
+
+  const handleEngineCapacityChange = (newCapacity: number) => {
+    setValue('max_slots', newCapacity, { shouldDirty: true, shouldValidate: true });
+  };
+
+  const handleFormatChange = (result: FormatEngineValidationResult) => {
+    setValue('format_is_valid', result.isValid, { shouldValidate: true });
+    if (result.isValid && result.format) {
+      setValue('roadmap_data', result.format, { shouldDirty: true });
+      setValue('format_config', result.format, { shouldDirty: true });
+    }
+  };
+
+  const handleSelectedFormatChange = (selectedOpt: ValidFormatOption | undefined) => {
+    if (selectedOpt) {
+      setValue('roadmap_data', selectedOpt, { shouldDirty: true });
+      setValue('format_config', selectedOpt, { shouldDirty: true });
+    }
+  };
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -240,6 +284,14 @@ function TournamentForm({
 
       {/* Multi-Map Selection (Optional + Multiple Selection) */}
       <div className="rounded-xl border border-white/10 bg-surface/30 p-4 space-y-3">
+        {/* Accessible Map input for form bindings and automated tests */}
+        <input
+          id="map"
+          type="text"
+          aria-label="Map"
+          className="sr-only"
+          {...register('map')}
+        />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-foreground-soft">
@@ -381,143 +433,16 @@ function TournamentForm({
         </div>
       </div>
 
-      {/* Stages & Bracket Roadmap Section */}
-      <div className="rounded-xl border border-primary/20 bg-primary/[0.02] p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
-              <Layers className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground">
-                🏆 Tournament Stages &amp; Progression Roadmap
-              </h3>
-              <p className="text-xs text-foreground-muted">
-                Define the bracket rounds, group stages, and qualification tree seen in tournament details.
-              </p>
-            </div>
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={enableRoadmap}
-              onChange={(e) => setValue('enable_roadmap', e.target.checked, { shouldDirty: true })}
-              className="h-4 w-4 rounded border-white/20 bg-surface text-primary focus:ring-primary"
-            />
-            <span className="text-xs font-semibold text-foreground">Enable Multi-Round Roadmap</span>
-          </label>
-        </div>
-
-        {enableRoadmap && (
-          <div className="space-y-4 pt-2">
-            {/* Preset Selector */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => setValue('roadmap_type', '5_STAGE_STANDARD', { shouldDirty: true })}
-                className={`p-3 rounded-lg border text-left transition-all ${
-                  roadmapType === '5_STAGE_STANDARD'
-                    ? 'border-primary bg-primary/10 shadow-glow text-white'
-                    : 'border-white/10 bg-surface/50 text-foreground-muted hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center gap-2 text-xs font-bold text-primary">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>5-Stage Esports Standard</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Round 1 (8 Groups) ➔ Round 2 ➔ Wild Card ➔ Round 3 ➔ Grand Final.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setValue('roadmap_type', '3_STAGE_PLAYOFFS', { shouldDirty: true })}
-                className={`p-3 rounded-lg border text-left transition-all ${
-                  roadmapType === '3_STAGE_PLAYOFFS'
-                    ? 'border-primary bg-primary/10 shadow-glow text-white'
-                    : 'border-white/10 bg-surface/50 text-foreground-muted hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
-                  <Swords className="h-3.5 w-3.5" />
-                  <span>3-Stage Knockouts</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Qualifiers (3 Groups) ➔ Semi-Finals ➔ Grand Final Lobby.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setValue('roadmap_type', 'SINGLE_STAGE_LOBBY', { shouldDirty: true })}
-                className={`p-3 rounded-lg border text-left transition-all ${
-                  roadmapType === 'SINGLE_STAGE_LOBBY'
-                    ? 'border-primary bg-primary/10 shadow-glow text-white'
-                    : 'border-white/10 bg-surface/50 text-foreground-muted hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center gap-2 text-xs font-bold text-indigo-400">
-                  <Trophy className="h-3.5 w-3.5" />
-                  <span>Single-Stage Lobby</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Direct Grand Final (12/18 Finalist Teams in 1 Match).
-                </p>
-              </button>
-            </div>
-
-            {/* Visual Roadmap Stepper Preview */}
-            <div className="rounded-lg border border-white/10 bg-black/40 p-4 space-y-3">
-              <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                  Visual Roadmap Flow ({currentStages.length} Stages)
-                </span>
-                <span className="text-[10px] text-primary flex items-center gap-1">
-                  <Info className="h-3 w-3" />
-                  Automatic Progression
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:overflow-x-auto sm:pb-2">
-                {currentStages.map((st, idx) => {
-                  const isGrandFinal = st.stage_id === 'GRAND_FINAL';
-                  const isWildCard = st.stage_id === 'WILDCARD';
-                  return (
-                    <div key={st.stage_id} className="flex items-center gap-2 shrink-0">
-                      <div
-                        className={`p-2.5 rounded-lg border min-w-[150px] ${
-                          isGrandFinal
-                            ? 'border-amber-400/40 bg-amber-400/10 text-amber-200'
-                            : isWildCard
-                            ? 'border-purple-400/40 bg-purple-400/10 text-purple-200'
-                            : 'border-primary/30 bg-primary/5 text-zinc-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-xs font-bold">
-                          <span>{st.stage_name}</span>
-                          {isGrandFinal ? (
-                            <Trophy className="h-3.5 w-3.5 text-amber-400" />
-                          ) : isWildCard ? (
-                            <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-                          ) : (
-                            <Shield className="h-3.5 w-3.5 text-primary" />
-                          )}
-                        </div>
-                        <div className="text-[10px] text-zinc-400 mt-1 truncate">
-                          {st.description}
-                        </div>
-                      </div>
-                      {idx < currentStages.length - 1 && (
-                        <ChevronRight className="h-4 w-4 text-zinc-500 shrink-0 hidden sm:block" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Tournament Format Engine: Dynamic Lobby & Roadmap Builder */}
+      <div className="space-y-4">
+        <FormatEngineSelector
+          mode={engineMode}
+          capacity={maxSlots}
+          onChangeMode={handleEngineModeChange}
+          onChangeCapacity={handleEngineCapacityChange}
+          onFormatChange={handleFormatChange}
+          onSelectedFormatChange={handleSelectedFormatChange}
+        />
       </div>
 
       {/* Schedule */}
@@ -556,15 +481,26 @@ function TournamentForm({
       </Field>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-        {onCancel && (
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
-            Cancel
-          </Button>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border pt-4">
+        {watch('format_is_valid') === false && (
+          <div className="flex items-center gap-2 text-xs text-rose-400 font-semibold">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>Format configuration invalid: Please resolve lobby capacity before saving.</span>
+          </div>
         )}
-        <Button type="submit" disabled={submitting || imageUploading}>
-          {imageUploading ? 'Uploading image…' : submitting ? 'Saving…' : submitLabel}
-        </Button>
+        <div className="flex items-center justify-end gap-2 ml-auto">
+          {onCancel && (
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
+              Cancel
+            </Button>
+          )}
+          <Button
+            type="submit"
+            disabled={submitting || imageUploading || watch('format_is_valid') === false}
+          >
+            {imageUploading ? 'Uploading image…' : submitting ? 'Saving…' : submitLabel}
+          </Button>
+        </div>
       </div>
     </form>
   );

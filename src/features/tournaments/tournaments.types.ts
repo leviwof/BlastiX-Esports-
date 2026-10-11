@@ -70,6 +70,9 @@ export interface TournamentListItem {
   room_id?: string | null;
   room_password?: string | null;
   room_released_at?: string | null;
+  format_plan?: unknown;
+  is_format_locked?: boolean;
+  roadmap_data?: unknown;
 }
 
 /**
@@ -177,6 +180,8 @@ export interface CreateTournamentPayload {
   registration_opens_at: string;
   registration_closes_at: string;
   starts_at: string;
+  roadmap_data?: unknown;
+  format_plan?: unknown;
 }
 
 /** PATCH /admin/tournaments/:id — all optional, and NO `game_slug`. */

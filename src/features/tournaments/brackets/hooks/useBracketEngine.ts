@@ -269,3 +269,41 @@ export function useSubmitGroupScores(tournamentId: string) {
     },
   });
 }
+
+// ==========================================
+// DYNAMIC FORMAT ENGINE STAGE MUTATIONS
+// ==========================================
+
+export function useGenerateStage(tournamentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (roundNumber: number) => bracketsApi.generateStage(tournamentId, roundNumber),
+    onSuccess: (_, roundNumber) => {
+      toast.success(`Stage ${roundNumber} generated! Groups seeded.`);
+      void queryClient.invalidateQueries({ queryKey: bracketKeys.rounds(tournamentId) });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to generate stage');
+    },
+  });
+}
+
+export function useFinalizeRound(tournamentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (roundId: string) => bracketsApi.finalizeRound(tournamentId, roundId),
+    onSuccess: (res) => {
+      if (res?.status === 'TIE_BREAKER_PENDING') {
+        toast.warning('Stage advancement paused: Tie-breaker required.');
+        void queryClient.invalidateQueries({ queryKey: bracketKeys.tieBreakers(tournamentId) });
+      } else {
+        toast.success(res?.message || 'Stage finalized and qualifiers advanced!');
+      }
+      void queryClient.invalidateQueries({ queryKey: bracketKeys.rounds(tournamentId) });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to finalize stage');
+    },
+  });
+}
+

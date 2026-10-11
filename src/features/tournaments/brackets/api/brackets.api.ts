@@ -166,3 +166,30 @@ export async function submitGroupScores(
   );
   return response.data;
 }
+
+// ==========================================
+// DYNAMIC FORMAT ENGINE STAGES
+// ==========================================
+
+export async function generateStage(
+  tournamentId: string,
+  roundNumber: number,
+): Promise<TournamentRound> {
+  const response = await apiClient.post<TournamentRound>(
+    `/admin/tournaments/${tournamentId}/stages/${roundNumber}/generate`,
+    {},
+  );
+  return response.data;
+}
+
+export async function finalizeRound(
+  tournamentId: string,
+  roundId: string,
+): Promise<{ status: string; message?: string }> {
+  const response = await apiClient.post<{ status: string; message?: string }>(
+    `/admin/tournaments/${tournamentId}/rounds/${roundId}/finalize`,
+    {},
+  );
+  return response.data;
+}
+
