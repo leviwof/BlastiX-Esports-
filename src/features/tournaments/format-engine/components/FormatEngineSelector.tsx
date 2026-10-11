@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type {
   GameMode,
   ValidFormatOption,
@@ -68,21 +68,28 @@ export const FormatEngineSelector: React.FC<FormatEngineSelectorProps> = ({
     exactRounds,
   });
 
+  // Track last emitted payload to break infinite re-render loops with parent form
+  const lastEmittedRef = useRef<string>('');
+
   // Whenever mode or capacity changes, reset local override
   useEffect(() => {
     setSelectedFormatOverride(null);
   }, [mode, capacity]);
 
-  // Notify parent of validation changes
+  // Notify parent of validation changes (only when the validation signature actually changes)
   useEffect(() => {
-    if (validationResult) {
-      onFormatChange?.(validationResult);
-      if (validationResult.isValid) {
-        const activeFormat = selectedFormatOverride || validationResult.format;
-        onSelectedFormatChange?.(activeFormat);
-      } else {
-        onSelectedFormatChange?.(undefined);
-      }
+    if (!validationResult) return;
+    const activeFormat = selectedFormatOverride || validationResult.format;
+    const signature = `${validationResult.isValid}:${validationResult.mode}:${validationResult.capacity}:${activeFormat?.formatId ?? ''}`;
+
+    if (lastEmittedRef.current === signature) return;
+    lastEmittedRef.current = signature;
+
+    onFormatChange?.(validationResult);
+    if (validationResult.isValid) {
+      onSelectedFormatChange?.(activeFormat);
+    } else {
+      onSelectedFormatChange?.(undefined);
     }
   }, [validationResult, selectedFormatOverride, onFormatChange, onSelectedFormatChange]);
 

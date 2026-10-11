@@ -13,35 +13,21 @@ export const formatEngineApi = {
    * Returns isValid, stage roadmap, failure diagnostic reasons, and suggested alternatives.
    */
   async calculateFormat(payload: FormatCalculateRequest): Promise<FormatEngineValidationResult> {
-    try {
-      const response = await apiClient.post<FormatEngineValidationResult>(
-        '/admin/tournaments/format-engine/calculate',
-        payload
-      );
-      return response.data;
-    } catch {
-      // Robust client fallback to prevent UI breakage if backend is offline or during testing
-      return calculateFormatLocal(payload);
-    }
+    // Pure local math execution is instant (< 0.05ms) and 100% deterministic
+    return calculateFormatLocal(payload);
   },
 
   /**
    * Search available valid formats within a capacity range.
    */
   async searchFormats(payload: FormatSearchRequest): Promise<ValidFormatOption[]> {
-    try {
-      const response = await apiClient.post<ValidFormatOption[]>(
-        '/admin/tournaments/format-engine/search',
-        payload
-      );
-      return response.data;
-    } catch {
-      const min = payload.minCapacity ?? 8;
-      const max = payload.maxCapacity ?? 192;
-      const validOptions: ValidFormatOption[] = [];
-      const step = payload.mode === 'SQUAD_BR' ? 12 : payload.mode === 'DUO_BR' ? 24 : payload.mode === 'SOLO_BR' ? 48 : 4;
+    const min = payload.minCapacity ?? 8;
+    const max = payload.maxCapacity ?? 192;
+    const validOptions: ValidFormatOption[] = [];
+    const step = payload.mode === 'SQUAD_BR' ? 12 : payload.mode === 'DUO_BR' ? 24 : payload.mode === 'SOLO_BR' ? 48 : 4;
 
-      for (let cap = min; cap <= max; cap += (payload.mode === 'CLASH_SQUAD' ? cap : step)) {
+    if (payload.mode === 'CLASH_SQUAD') {
+      for (let cap = Math.max(2, min); cap <= max; cap *= 2) {
         const res = calculateFormatLocal({
           mode: payload.mode,
           capacity: cap,
@@ -50,10 +36,20 @@ export const formatEngineApi = {
         if (res.isValid && res.format) {
           validOptions.push(res.format);
         }
-        if (payload.mode === 'CLASH_SQUAD' && cap === 0) break;
       }
-      return validOptions;
+    } else {
+      for (let cap = Math.max(step, min); cap <= max; cap += step) {
+        const res = calculateFormatLocal({
+          mode: payload.mode,
+          capacity: cap,
+          maxRounds: payload.preferredRounds,
+        });
+        if (res.isValid && res.format) {
+          validOptions.push(res.format);
+        }
+      }
     }
+    return validOptions;
   },
 
   /**

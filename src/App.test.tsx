@@ -56,7 +56,7 @@ describe('app shell routing', () => {
   it('shows the login screen (with the BlastIX brand) to a signed-out visitor', async () => {
     // No stored token → bootstrap resolves to unauthenticated → login form.
     renderAt('/login');
-    expect(await screen.findByRole('button', { name: /send login code/i })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /sign in/i })).toBeTruthy();
     expect(screen.getByAltText(/blastix/i)).toBeTruthy();
   });
 

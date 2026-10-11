@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
@@ -65,6 +65,7 @@ function TournamentForm({
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentFormSchema),
@@ -114,40 +115,74 @@ function TournamentForm({
       ? 'SOLO_BR'
       : 'SQUAD_BR';
 
-  const handleEngineModeChange = (newMode: GameMode) => {
-    if (newMode === 'CLASH_SQUAD') {
-      setValue('format', 'CLASH_SQUAD', { shouldDirty: true, shouldValidate: true });
-      setValue('team_mode', 'SQUAD', { shouldDirty: true, shouldValidate: true });
-    } else if (newMode === 'DUO_BR') {
-      setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
-      setValue('team_mode', 'DUO', { shouldDirty: true, shouldValidate: true });
-    } else if (newMode === 'SOLO_BR') {
-      setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
-      setValue('team_mode', 'SOLO', { shouldDirty: true, shouldValidate: true });
-    } else {
-      setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
-      setValue('team_mode', 'SQUAD', { shouldDirty: true, shouldValidate: true });
-    }
-  };
+  const handleEngineModeChange = useCallback(
+    (newMode: GameMode) => {
+      if (newMode === 'CLASH_SQUAD') {
+        setValue('format', 'CLASH_SQUAD', { shouldDirty: true, shouldValidate: true });
+        setValue('team_mode', 'SQUAD', { shouldDirty: true, shouldValidate: true });
+      } else if (newMode === 'DUO_BR') {
+        setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
+        setValue('team_mode', 'DUO', { shouldDirty: true, shouldValidate: true });
+      } else if (newMode === 'SOLO_BR') {
+        setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
+        setValue('team_mode', 'SOLO', { shouldDirty: true, shouldValidate: true });
+      } else {
+        setValue('format', 'BATTLE_ROYALE', { shouldDirty: true, shouldValidate: true });
+        setValue('team_mode', 'SQUAD', { shouldDirty: true, shouldValidate: true });
+      }
 
-  const handleEngineCapacityChange = (newCapacity: number) => {
-    setValue('max_slots', newCapacity, { shouldDirty: true, shouldValidate: true });
-  };
+      // Automatically adjust target capacity to a valid default preset for the selected mode
+      const currentCap = getValues('max_slots');
+      const isInvalidForNewMode =
+        !currentCap ||
+        (newMode === 'DUO_BR' && currentCap % 24 !== 0) ||
+        (newMode === 'SOLO_BR' && currentCap % 48 !== 0) ||
+        (newMode === 'SQUAD_BR' && currentCap % 12 !== 0);
 
-  const handleFormatChange = (result: FormatEngineValidationResult) => {
-    setValue('format_is_valid', result.isValid, { shouldValidate: true });
-    if (result.isValid && result.format) {
-      setValue('roadmap_data', result.format, { shouldDirty: true });
-      setValue('format_config', result.format, { shouldDirty: true });
-    }
-  };
+      if (isInvalidForNewMode) {
+        const defaultCap =
+          newMode === 'DUO_BR'
+            ? 48
+            : newMode === 'SOLO_BR'
+            ? 48
+            : newMode === 'CLASH_SQUAD'
+            ? 16
+            : 48;
+        setValue('max_slots', defaultCap, { shouldDirty: true, shouldValidate: true });
+      }
+    },
+    [setValue, getValues],
+  );
 
-  const handleSelectedFormatChange = (selectedOpt: ValidFormatOption | undefined) => {
-    if (selectedOpt) {
-      setValue('roadmap_data', selectedOpt, { shouldDirty: true });
-      setValue('format_config', selectedOpt, { shouldDirty: true });
-    }
-  };
+  const handleEngineCapacityChange = useCallback(
+    (newCapacity: number) => {
+      setValue('max_slots', newCapacity, { shouldDirty: true, shouldValidate: true });
+    },
+    [setValue],
+  );
+
+  const handleFormatChange = useCallback(
+    (result: FormatEngineValidationResult) => {
+      if (getValues('format_is_valid') !== result.isValid) {
+        setValue('format_is_valid', result.isValid, { shouldValidate: false });
+      }
+      if (result.isValid && result.format) {
+        setValue('roadmap_data', result.format, { shouldDirty: true });
+        setValue('format_config', result.format, { shouldDirty: true });
+      }
+    },
+    [setValue, getValues],
+  );
+
+  const handleSelectedFormatChange = useCallback(
+    (selectedOpt: ValidFormatOption | undefined) => {
+      if (selectedOpt) {
+        setValue('roadmap_data', selectedOpt, { shouldDirty: true });
+        setValue('format_config', selectedOpt, { shouldDirty: true });
+      }
+    },
+    [setValue],
+  );
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">

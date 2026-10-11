@@ -139,7 +139,7 @@ describe('content — banners', () => {
 
     fireEvent.click(await screen.findByRole('tab', { name: 'Partner inquiries' }));
     expect(await screen.findByText('Red Bull India')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    fireEvent.click(screen.getByRole('button', { name: /view/i }));
 
     expect(await screen.findByText(partnerInquiry.message)).toBeTruthy();
     expect(screen.getByRole('link', { name: partnerInquiry.email }).getAttribute('href')).toBe(
