@@ -24,7 +24,9 @@ interface RoomErrors {
 function RoomDialog({ tournamentId, open, onClose }: RoomDialogProps) {
   const [roomId, setRoomId] = useState('');
   const [roomPassword, setRoomPassword] = useState('');
-  const [releaseNow, setReleaseNow] = useState(false);
+  // Room creation is expected to make credentials available immediately.
+  // Admins can still uncheck this for a timed release.
+  const [releaseNow, setReleaseNow] = useState(true);
   const [errors, setErrors] = useState<RoomErrors>({});
   const setRoom = useSetRoomCredentials(tournamentId);
 
@@ -33,7 +35,7 @@ function RoomDialog({ tournamentId, open, onClose }: RoomDialogProps) {
     if (open) {
       setRoomId('');
       setRoomPassword('');
-      setReleaseNow(false);
+      setReleaseNow(true);
       setErrors({});
     }
   }, [open]);
@@ -92,7 +94,7 @@ function RoomDialog({ tournamentId, open, onClose }: RoomDialogProps) {
             onChange={(e) => setReleaseNow(e.target.checked)}
             className="h-4 w-4 rounded border-input bg-surface/50 text-primary focus-visible:ring-2 focus-visible:ring-ring"
           />
-          Release to participants now
+          Publish to confirmed participants now
         </label>
       </div>
     </Modal>

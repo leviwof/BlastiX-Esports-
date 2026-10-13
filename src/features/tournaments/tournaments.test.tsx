@@ -277,13 +277,13 @@ describe('tournament detail controls', () => {
     fireEvent.change(within(dialog).getByLabelText(/room password/i), {
       target: { value: 'secret' },
     });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save & release' }));
 
     await waitFor(() =>
       expect(setRoomCredentials).toHaveBeenCalledWith('t1', {
         room_id: 'RM123',
         room_password: 'secret',
-        release_now: false,
+        release_now: true,
       }),
     );
   });
