@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   createMatch,
   createTournament,
+  deleteTournament,
   disqualifyRegistration,
   finalizeTournament,
   getLeaderboard,
@@ -200,3 +201,17 @@ export function useFinalizeTournament(id: string) {
     onError: onMutationError,
   });
 }
+
+/** DELETE /admin/tournaments/:id — permanently delete a tournament. */
+export function useDeleteTournament() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteTournament(id),
+    onSuccess: (_data, id) => {
+      invalidateTournament(client, id);
+      toast.success('Tournament permanently deleted');
+    },
+    onError: onMutationError,
+  });
+}
+

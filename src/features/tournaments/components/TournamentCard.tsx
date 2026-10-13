@@ -11,6 +11,7 @@ import {
   Zap,
   Pencil,
   Trash2,
+  Ban,
   Users2,
   KeyRound,
   Send,
@@ -20,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { formatDateTime, formatEnum } from '../tournaments.utils';
 import { getTournamentSection, cleanTournamentTitle } from '../tournament.section';
-import { useSetRoomCredentials, useUpdateTournamentStatus } from '../tournaments.hooks';
+import { useDeleteTournament, useSetRoomCredentials, useUpdateTournamentStatus } from '../tournaments.hooks';
 import type { TournamentListItem } from '../tournaments.types';
 import { Input } from '@/components/ui/input';
 
@@ -43,14 +44,18 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
       ? 'border-red-400/40 bg-red-500/15 text-red-200'
       : t.status === 'COMPLETED'
         ? 'border-white/15 bg-black/40 text-white/90'
-        : section === 'freefire'
-          ? 'border-amber-400/40 bg-black/45 text-amber-100'
-          : 'border-primary/40 bg-black/45 text-white';
+        : t.status === 'CANCELLED'
+          ? 'border-red-500/40 bg-red-950/60 text-red-400'
+          : section === 'freefire'
+            ? 'border-amber-400/40 bg-black/45 text-amber-100'
+            : 'border-primary/40 bg-black/45 text-white';
 
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [roomId, setRoomId] = useState(t.room_id ?? '');
   const [roomPassword, setRoomPassword] = useState(t.room_password ?? '');
   const updateStatus = useUpdateTournamentStatus(t.id);
+  const deleteTournament = useDeleteTournament();
   const setRoom = useSetRoomCredentials(t.id);
 
   useEffect(() => {
@@ -217,15 +222,27 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
                 <Users2 className="h-3 w-3 mr-1 text-primary" />
                 Players
               </Button>
-              {!isCancelled && (
+              {isCancelled ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="text-xs h-8 px-2.5 text-red-400 hover:text-red-300 hover:border-red-500/40"
-                  onClick={() => setConfirmCancel(true)}
+                  className="text-xs h-8 px-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/40"
+                  title="Permanently delete cancelled tournament"
+                  onClick={() => setConfirmDelete(true)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 px-2.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/40"
+                  title="Cancel tournament"
+                  onClick={() => setConfirmCancel(true)}
+                >
+                  <Ban className="h-3.5 w-3.5" />
                 </Button>
               )}
             </div>
@@ -286,6 +303,22 @@ function TournamentCard({ tournament: t, to, showActions = false }: TournamentCa
         loading={updateStatus.isPending}
         onConfirm={handleCancelTournament}
         onClose={() => setConfirmCancel(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete tournament permanently"
+        description={`Are you sure you want to permanently delete "${displayTitle}"? This will permanently remove this cancelled tournament and all its associated data from the system. This cannot be undone.`}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep tournament"
+        destructive
+        loading={deleteTournament.isPending}
+        onConfirm={() => {
+          deleteTournament.mutate(t.id, {
+            onSuccess: () => setConfirmDelete(false),
+          });
+        }}
+        onClose={() => setConfirmDelete(false)}
       />
     </>
   );

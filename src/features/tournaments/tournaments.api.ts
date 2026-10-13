@@ -142,3 +142,14 @@ export async function finalizeTournament(id: string): Promise<FinalizeResult> {
   const response = await apiClient.post<FinalizeResult>(`/admin/tournaments/${id}/finalize`, {});
   return response.data;
 }
+
+/** DELETE /admin/tournaments/:id — permanently delete a tournament. */
+export async function deleteTournament(
+  id: string,
+): Promise<{ success: true; message: string; id: string }> {
+  const response = await apiClient.delete<{ success: true; message: string; id: string }>(
+    `/admin/tournaments/${id}`,
+  );
+  return response.data;
+}
+

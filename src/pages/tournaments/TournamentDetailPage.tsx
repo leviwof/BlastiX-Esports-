@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { KeyRound, Pencil } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { KeyRound, Pencil, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SectionCard } from '@/components/shared/SectionCard';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { ErrorState } from '@/components/shared/ErrorState';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { TournamentStatusBadge } from '@/features/tournaments/components/TournamentStatusBadge';
 import { StatusControl } from '@/features/tournaments/components/StatusControl';
@@ -13,7 +14,7 @@ import { ParticipantsPanel } from '@/features/tournaments/components/Participant
 import { MatchesPanel } from '@/features/tournaments/components/MatchesPanel';
 import { LeaderboardPanel } from '@/features/tournaments/components/LeaderboardPanel';
 import { TournamentStageControlHub } from '@/features/tournaments/brackets/components/TournamentStageControlHub';
-import { useTournament } from '@/features/tournaments/tournaments.hooks';
+import { useDeleteTournament, useTournament } from '@/features/tournaments/tournaments.hooks';
 import { formatDateTime, formatEnum } from '@/features/tournaments/tournaments.utils';
 import type { Tournament } from '@/features/tournaments/tournaments.types';
 
@@ -34,8 +35,11 @@ function rulesList(rules: unknown): string[] {
 /** /tournaments/:id — full detail + all admin controls for one tournament. */
 function TournamentDetailPage() {
   const { id = '' } = useParams();
+  const navigate = useNavigate();
   const { data, isPending, isError, error, refetch } = useTournament(id);
+  const deleteTournament = useDeleteTournament();
   const [roomOpen, setRoomOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (isPending) return <LoadingState label="Loading tournament…" />;
   if (isError) {
@@ -69,6 +73,16 @@ function TournamentDetailPage() {
               <KeyRound className="h-4 w-4" />
               Set room
             </Button>
+            {t.status === 'CANCELLED' && (
+              <Button
+                variant="outline"
+                className="text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-1 text-red-400" />
+                Delete
+              </Button>
+            )}
           </>
         }
       />
@@ -131,6 +145,22 @@ function TournamentDetailPage() {
       </div>
 
       <RoomDialog tournamentId={t.id} open={roomOpen} onClose={() => setRoomOpen(false)} />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Delete tournament permanently"
+        description={`Are you sure you want to permanently delete "${t.title}"? This will remove this cancelled tournament and all its data from the database. This action cannot be undone.`}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep tournament"
+        destructive
+        loading={deleteTournament.isPending}
+        onConfirm={() => {
+          deleteTournament.mutate(t.id, {
+            onSuccess: () => navigate('/tournaments'),
+          });
+        }}
+        onClose={() => setDeleteOpen(false)}
+      />
     </div>
   );
 }

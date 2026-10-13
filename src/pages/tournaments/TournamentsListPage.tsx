@@ -22,6 +22,7 @@ function TournamentsListPage() {
         }
       />
       <TournamentBrowser
+        showActions
         emptyTitle="No tournaments yet"
         emptyDescription="Create your first tournament to get started."
       />

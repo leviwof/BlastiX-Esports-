@@ -1,30 +1,33 @@
 import { useEffect, useState } from 'react';
-import { Flag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Flag, Trash2 } from 'lucide-react';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { TOURNAMENT_STATUSES, type Tournament, type TournamentStatus } from '../tournaments.types';
 import { formatEnum } from '../tournaments.utils';
-import { useFinalizeTournament, useUpdateTournamentStatus } from '../tournaments.hooks';
+import { useDeleteTournament, useFinalizeTournament, useUpdateTournamentStatus } from '../tournaments.hooks';
 
 export interface StatusControlProps {
   tournament: Tournament;
 }
 
 /**
- * Status lifecycle controls for a tournament: change status (cancelling is
- * confirmed, as it is the only "removal" the backend supports), and finalize
- * standings (confirmed — it is irreversible from the panel).
+ * Status lifecycle controls for a tournament: change status, finalize standings,
+ * and permanently delete cancelled tournaments.
  */
 function StatusControl({ tournament }: StatusControlProps) {
+  const navigate = useNavigate();
   const [nextStatus, setNextStatus] = useState<TournamentStatus>(
     tournament.status as TournamentStatus,
   );
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [confirmFinalize, setConfirmFinalize] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const updateStatus = useUpdateTournamentStatus(tournament.id);
   const finalize = useFinalizeTournament(tournament.id);
+  const deleteTournament = useDeleteTournament();
 
   // Keep the selector in sync when the tournament refetches after a change.
   useEffect(() => {
@@ -47,6 +50,8 @@ function StatusControl({ tournament }: StatusControlProps) {
       { onSuccess: () => setConfirmCancel(false) },
     );
   };
+
+  const isCancelled = tournament.status === 'CANCELLED';
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -76,20 +81,34 @@ function StatusControl({ tournament }: StatusControlProps) {
         </Button>
       </div>
 
-      <Button
-        variant="outline"
-        onClick={() => setConfirmFinalize(true)}
-        disabled={finalize.isPending}
-        className="sm:mt-5"
-      >
-        <Flag className="h-4 w-4" />
-        Finalize standings
-      </Button>
+      <div className="flex items-center gap-2">
+        {isCancelled && (
+          <Button
+            variant="outline"
+            onClick={() => setConfirmDelete(true)}
+            disabled={deleteTournament.isPending}
+            className="text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 sm:mt-5"
+          >
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            Delete tournament
+          </Button>
+        )}
+
+        <Button
+          variant="outline"
+          onClick={() => setConfirmFinalize(true)}
+          disabled={finalize.isPending || isCancelled}
+          className="sm:mt-5"
+        >
+          <Flag className="h-4 w-4" />
+          Finalize standings
+        </Button>
+      </div>
 
       <ConfirmDialog
         open={confirmCancel}
         title="Cancel tournament"
-        description="This sets the tournament to Cancelled. There is no delete — this is how a tournament is removed from active play."
+        description="This sets the tournament to Cancelled. Cancelled tournaments can be permanently deleted afterwards."
         confirmLabel="Cancel tournament"
         cancelLabel="Keep tournament"
         destructive
@@ -109,6 +128,25 @@ function StatusControl({ tournament }: StatusControlProps) {
         loading={finalize.isPending}
         onConfirm={() => finalize.mutate(undefined, { onSuccess: () => setConfirmFinalize(false) })}
         onClose={() => setConfirmFinalize(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete tournament permanently"
+        description={`Are you sure you want to permanently delete "${tournament.title}"? This will remove this cancelled tournament and all its data from the database. This action cannot be undone.`}
+        confirmLabel="Delete permanently"
+        cancelLabel="Keep tournament"
+        destructive
+        loading={deleteTournament.isPending}
+        onConfirm={() => {
+          deleteTournament.mutate(tournament.id, {
+            onSuccess: () => {
+              setConfirmDelete(false);
+              navigate('/tournaments');
+            },
+          });
+        }}
+        onClose={() => setConfirmDelete(false)}
       />
     </div>
   );

@@ -38,6 +38,10 @@ vi.mock('@/features/tournaments/tournaments.hooks', () => ({
     mutate: vi.fn(),
     isPending: false,
   })),
+  useDeleteTournament: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+  })),
 }));
 
 describe('LiveArenaPage', () => {
