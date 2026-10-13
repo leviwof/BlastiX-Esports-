@@ -51,6 +51,7 @@ function TournamentBrowser({
     status: lockedStatus ?? (filters.status || undefined),
     team_mode: filters.team_mode || undefined,
     format: filters.format || undefined,
+    section: filterSection === 'freefire' ? ('FREEFIRE_LIVE' as const) : filterSection === 'blastx' ? ('BLASTX' as const) : undefined,
   };
 
   const { data, isPending, isError, error, refetch, isFetching } = useTournaments(query);

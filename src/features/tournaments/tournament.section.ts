@@ -44,11 +44,6 @@ export function getTournamentSection(t: {
     return 'blastx';
   }
 
-  // If game_slug is explicitly free_fire and not branded BlastX, categorize as freefire
-  if (slug === 'free_fire') {
-    return 'freefire';
-  }
-
   // Default to BlastX for internal esports
   return 'blastx';
 }

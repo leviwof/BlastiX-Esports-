@@ -151,6 +151,9 @@ export type TournamentPage = Paginated<TournamentListItem>;
 export interface FilterTournamentQuery {
   page?: number;
   limit?: number;
+  section?: TournamentSectionApi;
+  game?: string;
+  q?: string;
   status?: TournamentStatus;
   team_mode?: TeamMode;
   format?: TournamentFormat;

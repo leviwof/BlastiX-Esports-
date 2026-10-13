@@ -57,7 +57,7 @@ function TournamentForm({
   const [imageUploading, setImageUploading] = useState(false);
   const effectiveDefaults: TournamentFormValues = {
     ...defaultValues,
-    section: lockSection ?? defaultValues.section ?? 'freefire',
+    section: lockSection ?? defaultValues.section ?? 'blastx',
   };
 
   const {
@@ -72,7 +72,7 @@ function TournamentForm({
     defaultValues: effectiveDefaults,
   });
 
-  const currentSection = watch('section') ?? lockSection ?? 'freefire';
+  const currentSection = watch('section') ?? lockSection ?? 'blastx';
   const bannerUrl = watch('banner_url') ?? '';
   const selectedMaps = watch('maps') || [];
 
@@ -221,9 +221,10 @@ function TournamentForm({
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
+            <input type="hidden" {...register('section')} />
             <button
               type="button"
-              onClick={() => setValue('section', 'freefire')}
+              onClick={() => setValue('section', 'freefire', { shouldDirty: true, shouldValidate: true })}
               className={`flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all ${
                 currentSection === 'freefire'
                   ? 'border-amber-500/50 bg-amber-500/10 shadow-sm text-foreground'
@@ -239,7 +240,7 @@ function TournamentForm({
 
             <button
               type="button"
-              onClick={() => setValue('section', 'blastx')}
+              onClick={() => setValue('section', 'blastx', { shouldDirty: true, shouldValidate: true })}
               className={`flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all ${
                 currentSection === 'blastx'
                   ? 'border-primary/50 bg-primary/10 shadow-glow text-foreground'

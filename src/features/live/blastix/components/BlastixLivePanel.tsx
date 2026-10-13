@@ -15,7 +15,7 @@ import { TournamentBrowser } from '@/features/tournaments/components/TournamentB
 import { useTournaments } from '@/features/tournaments/tournaments.hooks';
 
 export function BlastixLivePanel() {
-  const { data } = useTournaments({ status: 'LIVE', limit: 50 });
+  const { data } = useTournaments({ status: 'LIVE', limit: 50, section: 'BLASTX' });
   const liveCount = data?.total ?? 0;
 
   return (
@@ -121,6 +121,7 @@ export function BlastixLivePanel() {
 
         <TournamentBrowser
           lockedStatus="LIVE"
+          filterSection="blastx"
           emptyTitle="No BlastiX tournaments live right now"
           emptyDescription="Tournaments created on BlastiX appear here once their status is changed to LIVE. You can transition an upcoming tournament to Live from the Tournaments tab."
         />

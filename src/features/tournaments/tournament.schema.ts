@@ -198,6 +198,7 @@ export type TournamentFormValues = z.infer<typeof tournamentFormSchema>;
 
 /** Sensible defaults for the create form. */
 export const createDefaultValues: TournamentFormValues = {
+  section: 'blastx',
   title: '',
   description: '',
   banner_url: '',
@@ -301,10 +302,10 @@ export function toCreatePayload(
   values: TournamentFormValues,
   overrideSection?: 'freefire' | 'blastx',
 ): CreateTournamentPayload {
-  const section = overrideSection ?? values.section;
-  const title = section && overrideSection ? formatSectionTitle(values.title, section) : values.title.trim();
-  const description = section && overrideSection
-    ? formatSectionDescription(values.description, section)
+  const section = overrideSection ?? values.section ?? 'blastx';
+  const title = overrideSection ? formatSectionTitle(values.title, overrideSection) : values.title.trim();
+  const description = overrideSection
+    ? formatSectionDescription(values.description, overrideSection)
     : values.description?.trim() || undefined;
 
   // Requirement 1: Only send fields with positive values (> 0); do not send 0 or empty fields
@@ -356,7 +357,7 @@ export function toCreatePayload(
     : undefined;
 
   return {
-    section: section === 'freefire' ? 'FREEFIRE_LIVE' : section === 'blastx' ? 'BLASTX' : undefined,
+    section: section === 'freefire' ? 'FREEFIRE_LIVE' : 'BLASTX',
     game_slug: values.game_slug?.trim() || 'free_fire',
     title,
     description,
